@@ -1,0 +1,66 @@
+name: Nginx
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy_nginx_prod:
+    name: Deploy nginx (prod)
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
+    permissions:
+      contents: read
+    env:
+      SERVICE_NAME: "🌐nginx-prod"
+      REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+      REMOTE_USER: ${{ secrets.REMOTE_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync openssh-client
+      - name: Configure SSH
+        run: |
+          echo "${SSH_PRIVATE_KEY}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${REMOTE_HOST} >> ~/.ssh/known_hosts
+      - name: Deploy nginx config
+        run: |
+          # Синхронизируем nginx конфиги во временную директорию
+          rsync -avz -e "ssh -i /tmp/deploy_key" nginx/default.conf ${REMOTE_USER}@${REMOTE_HOST}:/tmp/nginx-default.conf
+          rsync -avz -e "ssh -i /tmp/deploy_key" nginx/dev.conf ${REMOTE_USER}@${REMOTE_HOST}:/tmp/nginx-dev.conf
+          
+          # Деплоим конфиги в нужную директорию и перезагружаем nginx
+          ssh -t -i /tmp/deploy_key ${REMOTE_USER}@${REMOTE_HOST} <<EOF
+          set -e
+          echo "Deploying nginx configuration..."
+          
+          # Создаем директории если не существуют
+          sudo mkdir -p /etc/nginx/sites-available
+          sudo mkdir -p /etc/nginx/sites-enabled
+          
+          # Перемещаем конфиги в нужную директорию
+          sudo mv /tmp/nginx-default.conf /etc/nginx/sites-available/default
+          sudo mv /tmp/nginx-dev.conf /etc/nginx/sites-available/dev
+          
+          # Создаем симлинки в sites-enabled
+          sudo ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+          sudo ln -sf /etc/nginx/sites-available/dev /etc/nginx/sites-enabled/dev
+          
+          # Проверяем конфигурацию nginx
+          echo "Testing nginx configuration..."
+          sudo nginx -t
+          
+          # Перезагружаем nginx
+          echo "Reloading nginx..."
+          sudo systemctl reload nginx || sudo systemctl restart nginx
+          
+          echo "Nginx configuration deployed successfully!"
+          EOF
+      - name: Success message
+        run: echo "Nginx deployment completed successfully!"
+

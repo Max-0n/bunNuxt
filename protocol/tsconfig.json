@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@shared-protocol/*": ["../protocol/src/shared/*"],
+      "@pathly-protocol/*": ["../protocol/src/pathly/*"]
+    },
+    "lib": ["ESNext"],
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "composite": false,
+    "strict": true,
+    "downlevelIteration": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "types": [
+      "bun-types" // add Bun global
+    ]
+  }
+}

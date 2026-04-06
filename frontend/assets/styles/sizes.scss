@@ -1,0 +1,23 @@
+@mixin size($size) {
+  .size-#{$size} {
+    width: #{$size}px;
+    height: #{$size}px;
+  }
+}
+
+@include size(12);
+@include size(14);
+@include size(16);
+@include size(18);
+@include size(20);
+@include size(20);
+@include size(24);
+@include size(28);
+@include size(32);
+@include size(42);
+@include size(48);
+@include size(60);
+@include size(80);
+@include size(100);
+@include size(120);
+@include size(140);

@@ -1,0 +1,104 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title= metaTitle || 'Barcodex - Create and Share Monsters'
+    meta(name="description" content=metaDescription || 'Discover, create, and share amazing monsters in Barcodex!')
+    
+    //- Open Graph meta tags
+    meta(property="og:title" content=metaTitle || 'Barcodex - Create and Share Monsters')
+    meta(property="og:description" content=metaDescription || 'Discover, create, and share amazing monsters in Barcodex!')
+    meta(property="og:image" content=metaImage || '/static/themes/background_preload.webp')
+    //- meta(property="og:image:width" content="1200")
+    //- meta(property="og:image:height" content="630")
+    meta(property="og:type" content="website")
+    meta(property="og:site_name" content="Barcodex")
+    meta(property="og:url" content=ogUrl || '')
+    meta(property="og:locale" content="en_US")
+    
+    //- Twitter Card meta tags
+    meta(name="twitter:card" content="summary_large_image")
+    meta(name="twitter:title" content=metaTitle || 'Barcodex - Create and Share Monsters')
+    meta(name="twitter:description" content=metaDescription || 'Discover, create, and share amazing monsters in Barcodex!')
+    meta(name="twitter:image" content=metaImage || '/static/themes/background_preload.webp')
+    
+    //- Additional meta tags
+    meta(name="robots" content="index, follow")
+    meta(name="author" content="Barcodex")
+    meta(name="keywords" content="barcodex, monsters, barcode, scanner, telegram, game")
+    
+    //- Favicon
+    link(rel="icon" type="image/x-icon" href="/favicon.ico")
+
+    //- styles
+    style.
+      html {
+        background: #000;
+      }
+      body {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        background-position: center center;
+        background-repeat: repeat;
+        background-size: 420px auto;
+        background-image: url('https://telegram.org/img/tgme/pattern.svg');
+        opacity: 0.25;
+        filter: invert();
+      }
+      button {
+        background: #1c93e3;
+        color: white;
+        padding: 14px 24px;
+        border: none;
+        border-radius: 22px;
+        z-index: 1;
+        cursor: pointer;
+      }
+    //- Redirect script
+    script.
+      function goToBot() {
+        const {hostname, pathname} = window.location;
+        const subdomain = hostname.split('.')[0] || '';
+
+        // Первый сегмент пути (может быть чем угодно)
+        const id = pathname.replace(/^\/+/, '').split('/')[0] || '';
+
+        let payload;
+        if (subdomain.startsWith('products')) {
+          payload = { product: id };
+        } else if (subdomain.startsWith('monsters')) {
+          payload = { monster: id };
+        } else if (subdomain.startsWith('ref')) {
+          payload = { ref: id };
+        }
+
+        const to = new URL('#{botUrl}');
+        if (payload) {
+          const bytes = new TextEncoder().encode(JSON.stringify(payload))
+          let base64 = btoa(String.fromCharCode(...bytes))
+          let base64Url = base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
+          to.search = `startapp=${base64Url}`
+        } else {
+          to.search = `startapp`
+        }
+
+        window.location = to.href;
+      }
+      window.addEventListener('load', goToBot, { once: true });
+  body
+    .background
+    button(onclick="goToBot()") Barcodia

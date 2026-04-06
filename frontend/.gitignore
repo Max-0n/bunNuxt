@@ -1,0 +1,68 @@
+.idea
+.env
+.graphqlconfig
+remote-schema.graphql
+ansible/config/id_rsa
+ansible/config/id_rsa.pub
+
+# Package manager
+.yarn/
+
+# Dependencies
+.idea/
+.nuxt/
+node_modules/
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+# Misc
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# ESLint
+.eslintcache
+
+# Build and test
+dist/
+build/
+coverage/
+
+# Cache
+.cache/
+**/node_modules
+
+# Temp:
+k6-load-testing/
+backend/scripts/
+backend/sql/events.sqlpp
+backend/sql/events.sqlppnb
+backend/sql/referral.sqlpp
+
+# Sublime Test
+*.sublime-project
+*.sublime-workspace
+
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.lock
+.nixpkgs
+
+# direnv
+.direnv
+
+# devenv up log
+processes.log
+.metals/metals.lock.db
+backend/.env.stage

@@ -1,0 +1,48 @@
+@mixin marginSpacing($property, $sizes...) {
+  @each $size in $sizes {
+    .#{$property}#{$size} {
+      @if $property == 'mt' {
+        margin-top: #{$size}px;
+      } @else if $property == 'mb' {
+        margin-bottom: #{$size}px;
+      } @else if $property == 'ml' {
+        margin-left: #{$size}px;
+      } @else if $property == 'mr' {
+        margin-right: #{$size}px;
+      }
+    }
+  }
+}
+
+// Использование миксина для нужных размеров
+@include marginSpacing('mt', -3, 8, 10, 12, 24, 32, 40, 64);
+@include marginSpacing('mb', -3, 8, 10, 12, 24, 32, 40, 64);
+@include marginSpacing('ml', 2, 6);
+@include marginSpacing('mr', 6);
+
+
+@mixin paddingSpacing($property, $sizes...) {
+  @each $size in $sizes {
+    .#{$property}#{$size} {
+      @if $property == 'p' {
+        padding: #{$size}px;
+      } @else if $property == 'pt' {
+        padding-top: #{$size}px;
+      } @else if $property == 'pb' {
+        padding-bottom: #{$size}px;
+      } @else if $property == 'pl' {
+        padding-left: #{$size}px;
+      } @else if $property == 'pr' {
+        padding-right: #{$size}px;
+      }
+    }
+  }
+}
+
+// Использование миксина для нужных размеров
+@include paddingSpacing('p', 2, 4, 8, 12);
+@include paddingSpacing('pt', 2, 4, 8, 12);
+@include paddingSpacing('pb', 2, 4, 8, 12);
+@include paddingSpacing('pl', 2, 4, 8, 12);
+@include paddingSpacing('pr', 2, 4, 8, 12);
+

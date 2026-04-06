@@ -1,0 +1,41 @@
+{
+  "name": "example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "type-check": "tsc --noEmit",
+    "lint": "biome check",
+    "lint-fix": "cd .. && bunx biome check --fix",
+    "get-cdn": "bun ../cdn/src/genObjs.ts",
+    "get-l10n": "bun ./genLocales.ts"
+  },
+  "dependencies": {
+    "@pinia/nuxt": "^0.11.3",
+    "@types/node": "^24.10.1",
+    "notivue": "^2.4.5",
+    "nuxt": "^4.2.1",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.25",
+    "vue-router": "^4.6.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.8",
+    "@nuxt/eslint": "^1.11.0",
+    "@nuxtjs/google-fonts": "^3.2.0",
+    "@nuxtjs/i18n": "^10.2.1",
+    "csvtojson": "^2.0.14",
+    "eslint": "^9.39.1",
+    "eslint-plugin-vue-pug": "^0.6.2",
+    "sass": "^1.94.2",
+    "sass-loader": "^16.0.6",
+    "typescript": "^5.9.3",
+    "vite-plugin-pug": "^0.4.1",
+    "vite-svg-loader": "^5.1.0",
+    "vue-tsc": "^3.1.6"
+  }
+}

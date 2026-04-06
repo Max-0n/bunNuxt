@@ -1,0 +1,20 @@
+{
+  "onboarding": {
+    "welcome": "Hello, {user}!<br/>Barcodia is waiting for you",
+    "scan_codes": "1. Scan the codes!",
+    "generate_monsters": "2. Hooray, your first monster!",
+    "collect_and_win": "3. Collect them and win!",
+    "scan_first": "Scan<br>your first product!"
+  },
+  "minigame": {
+    "select_perk": "Select monster sign",
+    "draw": "Draw a sign",
+    "draw_complete": "Done!",
+    "perk": {
+      "star": "Strength",
+      "clock": "Agility",
+      "circle": "Intelligence",
+      "thunder": "Stamina"
+    }
+  }
+}

@@ -1,0 +1,74 @@
+name: CDN
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_cdn:
+    name: Build CDN
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.9"
+      - name: Install dependencies
+        run: |
+          cd cdn
+          bun install
+      - name: Generate CDN files
+        run: |
+          cd cdn
+          ls -la static/ || echo "No static directory"
+      - name: Upload CDN build
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdn-build
+          path: |
+            cdn/static
+          if-no-files-found: error
+
+  deploy_cdn:
+    name: Deploy CDN
+    needs: build_cdn
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install s3cmd
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y s3cmd
+      - name: Download CDN artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: cdn-build
+          path: cdn
+      - name: Configure s3cmd
+        run: |
+          cat <<EOF > /tmp/s3cfg
+          [default]
+          access_key = ${S3_ACCESS_KEY}
+          secret_key = ${S3_SECRET_KEY}
+          host_base = fsn1.your-objectstorage.com
+          host_bucket = %(bucket)s.fsn1.your-objectstorage.com
+          bucket_location = fsn1
+          use_https = True
+          signature_v2 = False
+          EOF
+      - name: Deploy CDN to S3
+        run: |
+          cd cdn
+          ls -la static/ || (echo "No static directory found" && exit 1)
+          s3cmd -c /tmp/s3cfg sync static/ s3://horse-defied-s-1/cdn/ --acl-public
+          echo "CDN deployed to horse-defied-s-1 bucket"
+

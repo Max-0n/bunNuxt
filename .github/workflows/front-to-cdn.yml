@@ -1,0 +1,167 @@
+name: Frontend-to-cdn
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_DEFAULT_REGION: us-east-1
+  DIRECTORY: frontend
+  APP_ENV: production
+  API_URL: ${{ vars.API_URL }}
+  CDN_URL: ${{ vars.CDN_URL }}
+
+jobs:
+  build_frontend_prod:
+    name: Build frontend (prod)
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
+    permissions:
+      contents: read
+    env:
+      SERVICE_NAME: "🔥frontend-prod"
+      DOMAIN: triplestudio.app
+      BUCKET_NAME: triplesbucket
+      ENV_PATH: triple
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.9"
+
+      - name: Bun version
+        run: bun --version
+
+      - name: Install protocol dependencies
+        run: |
+          cd protocol
+          bun install
+
+      - name: Install CDN dependencies
+        run: |
+          cd cdn
+          bun install
+
+      - name: Install frontend dependencies
+        run: |
+          cd "${DIRECTORY}"
+          bun install
+
+      - name: Generate frontend assets (best effort)
+        run: |
+          cd "${DIRECTORY}"
+          timeout --kill-after=60s 120s bun generate || echo "Continuing..."
+
+      - name: List build artifacts
+        run: |
+          cd "${DIRECTORY}"
+          ls -la .
+          ls -la .output/public || echo "No .output/public directory"
+          ls -la dist || echo "No dist directory"
+
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: ${{ format('{0}/.output/public', env.DIRECTORY) }}
+          if-no-files-found: error
+
+
+  deploy_frontend_prod:
+    name: Deploy frontend (prod)
+    needs: build_frontend_prod
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
+    permissions:
+      contents: read
+    env:
+      SERVICE_NAME: "🔥frontend-prod"
+      DOMAIN: triplestudio.app
+      BUCKET_NAME: triplesbucket
+      ENV_PATH: triple
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install s3cmd
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y s3cmd
+
+      - name: Download frontend build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/.output/public
+
+      - name: Fix artifact structure if nested
+        run: |
+          if [ -d "frontend/.output/public/frontend/.output/public" ]; then
+            echo "Fixing nested artifact folder..."
+            mv frontend/.output/public/frontend/.output/public/* frontend/.output/public/
+            rm -rf frontend/.output/public/frontend
+          fi
+
+      - name: Configure s3cmd
+        run: |
+          cat <<EOF > /tmp/s3cfg
+          [default]
+          access_key = ${S3_ACCESS_KEY}
+          secret_key = ${S3_SECRET_KEY}
+          host_base = s3.amazonaws.com
+          host_bucket = %(bucket)s.s3.amazonaws.com
+          bucket_location = us-east-1
+          use_https = True
+          signature_v2 = False
+          EOF
+
+      # ==========================
+      # 1) DEPLOY STATIC ASSETS
+      # ==========================
+      - name: Deploy static assets (cacheable)
+        run: |
+          DEPLOY_DIR="frontend/.output/public"
+  
+          # Загружаем только не-HTML файлы
+          find "${DEPLOY_DIR}" -type f ! -name '*.html' | while read file; do
+            # относительный путь
+            rel="${file#${DEPLOY_DIR}/}"
+  
+            # Определяем MIME-тип в зависимости от типа файла
+            mime_args=""
+            if [[ "$file" == *.js ]]; then
+              mime_args="--mime-type=application/javascript"
+            elif [[ "$file" == *.css ]]; then
+              mime_args="--mime-type=text/css"
+            fi
+
+            # Загружаем файл с соответствующими заголовками
+            s3cmd -c /tmp/s3cfg put "$file" \
+              "s3://${BUCKET_NAME}/${ENV_PATH}/frontend/${rel}" \
+              $mime_args \
+              --add-header="Cache-Control:max-age=604800"
+          done
+
+      # ==========================
+      # 2) DEPLOY HTML FILES
+      # ==========================
+      - name: Deploy HTML (no cache)
+        run: |
+          DEPLOY_DIR="frontend/.output/public"
+  
+          find "${DEPLOY_DIR}" -name '*.html' | while read file; do
+          rel="${file#${DEPLOY_DIR}/}"
+
+          s3cmd -c /tmp/s3cfg put "$file" \
+           "s3://${BUCKET_NAME}/${ENV_PATH}/frontend/${rel}" \
+           --add-header="Cache-Control:no-cache"
+          done
+
+
+      - name: Done
+        run: echo "Deployed to https://${DOMAIN}"

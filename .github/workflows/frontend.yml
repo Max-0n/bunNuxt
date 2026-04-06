@@ -1,0 +1,142 @@
+name: Frontend
+
+run-name: ${{ inputs.ServiceName }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      ServiceName:
+        type: choice
+        required: true
+        options:
+          - 🔥frontend-prod
+          - 🍀frontend-dev
+        default: 🍀frontend-dev
+        description: 'Frontend servers'
+
+env:
+  AWS_DEFAULT_REGION: us-east-1
+  DIRECTORY: frontend
+  APP_ENV: production
+  API_URL: ${{ vars.API_URL }}
+  WS_URL: ${{ vars.WS_URL }}
+  CDN_URL: ${{ vars.CDN_URL }}
+  WEB_APP_URL: ${{ vars.WEB_APP_URL }}
+  BOT_URL: ${{ vars.BOT_URL }}
+  TON_ADDRESS: ${{ vars.TON_ADDRESS }}
+  TON_TESTNET: ${{ inputs.ServiceName != '🔥frontend-prod' && 'true' || '' }}
+
+jobs:
+  build_frontend:
+    name: Build frontend ${{ inputs.ServiceName }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.ServiceName == '🔥frontend-prod' && 'prod' || 'dev' }}
+    permissions:
+      contents: read
+    env:
+      SERVICE_NAME: ${{ inputs.ServiceName }}
+      DOMAIN: ${{ inputs.ServiceName == '🔥frontend-prod' && 'triplestudio.app' || 'dev.triplestudio.app' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.9"
+
+      - name: Bun version
+        run: bun --version
+
+      - name: Install protocol dependencies
+        run: |
+          cd protocol
+          bun install
+
+      - name: Install CDN dependencies
+        run: |
+          cd cdn
+          bun install
+
+      - name: Install frontend dependencies
+        run: |
+          cd "${DIRECTORY}"
+          bun install
+
+      - name: Generate frontend assets (best effort)
+        run: |
+          cd "${DIRECTORY}"
+          timeout --kill-after=60s 120s bun generate || echo "Continuing..."
+
+      - name: List build artifacts
+        run: |
+          cd "${DIRECTORY}"
+          ls -la .
+          ls -la .output/public || echo "No .output/public directory"
+          ls -la dist || echo "No dist directory"
+
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: ${{ format('{0}/.output/public', env.DIRECTORY) }}
+          if-no-files-found: error
+          retention-days: 2
+
+
+  deploy_frontend_prod:
+    name: Deploy frontend ${{ inputs.ServiceName }}
+    needs: build_frontend
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.ServiceName == '🔥frontend-prod' && 'prod' || 'dev' }}
+    permissions:
+      contents: read
+    env:
+      REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+      REMOTE_USER: ${{ secrets.REMOTE_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download frontend build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/.output/public
+
+      - name: Install rsync + SSH
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync openssh-client
+
+      - name: Configure SSH
+        run: |
+          echo "${SSH_PRIVATE_KEY}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${REMOTE_HOST} >> ~/.ssh/known_hosts
+
+      - name: Upload to temporary folder
+        run: |
+          ssh -i /tmp/deploy_key ${REMOTE_USER}@${REMOTE_HOST} "rm -rf /home/${REMOTE_USER}/frontend_tmp && mkdir -p /home/${REMOTE_USER}/frontend_tmp"
+  
+          rsync -avz \
+            -e "ssh -i /tmp/deploy_key" \
+            frontend/.output/public/ \
+            ${REMOTE_USER}@${REMOTE_HOST}:/home/${REMOTE_USER}/frontend_tmp/
+
+      - name: Move to deployment directory with sudo
+        run: |
+          ssh -i /tmp/deploy_key ${REMOTE_USER}@${REMOTE_HOST} <<EOF
+            set -e
+            DEPLOY_PATH="${{ inputs.ServiceName == '🔥frontend-prod' && '/var/www/html' || '/var/www/html-dev' }}"
+            sudo rm -rf \${DEPLOY_PATH}/*
+            sudo mv /home/${REMOTE_USER}/frontend_tmp/* \${DEPLOY_PATH}/
+            sudo chown -R www-data:www-data \${DEPLOY_PATH}
+            sudo chmod -R 755 \${DEPLOY_PATH}
+          EOF
+
+      - name: Done
+        run: echo "Frontend deployed completed successfully!"

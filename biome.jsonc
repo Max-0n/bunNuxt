@@ -1,0 +1,119 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.7/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "dev"
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 120
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedImports": { "level": "error" },
+        "noUnusedLabels": { "level": "error" },
+        "noUnusedVariables": "off",
+        "noUnusedFunctionParameters": "off",
+        "noUnusedPrivateClassMembers": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": { "level": "off" },
+        "noConsole": { "level": "off" },
+        "useIterableCallbackReturn": { "level": "off" }
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": { "level": "off" },
+        "noForEach": { "level": "off" }
+      },
+      "style": {
+        "useConsistentArrayType": { "level": "error" },
+        "useForOf": { "level": "error" },
+        "useNamingConvention": "off",
+        "noUselessElse": "off",
+        "useImportType": "off",
+        "useExportType": "off",
+        "useTemplate": "off",
+        "noNonNullAssertion": "off",
+        "noUnusedTemplateLiteral": "off",
+        "noParameterAssign": "off"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "enabled": true,
+      "semicolons": "asNeeded",
+      "arrowParentheses": "asNeeded",
+      "quoteStyle": "single",
+      "trailingCommas": "es5"
+    }
+  },
+  "json": {
+    "formatter": {
+      "enabled": true,
+      "trailingCommas": "none"
+    }
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": [
+      "**/*.ts",
+      "**/*.js",
+      "**/*.vue",
+      "**/*.json",
+      "**/*.mjs",
+      "!!**/node_modules",
+      "!!**/.nuxt",
+      "!!**/.output",
+      "!!**/dist",
+      "!!**/build",
+      "!!**/coverage",
+      "!!**/*.min.js",
+      "!!**/*.min.css"
+    ]
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.vue"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedImports": "off",
+            "noUnusedVariables": "off",
+            "noUnusedFunctionParameters": "off"
+          },
+          "style": {
+            "useImportType": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["nuxt.config.ts", "**/nuxt.config.*"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useNodejsImportProtocol": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.config.*", "**/*.config.js", "**/*.config.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useNodejsImportProtocol": "off"
+          }
+        }
+      }
+    }
+  ]
+}

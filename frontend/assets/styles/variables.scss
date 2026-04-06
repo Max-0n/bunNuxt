@@ -1,0 +1,51 @@
+:root {
+  --font-rubik: Rubik, sans-serif;
+
+  --nv-z: 999999; // Notivue – z-index update
+  --nv-root-top: calc(var(--tg-content-safe-area-inset-top) + 40px); // Notivue – root top padding
+
+  --font-family: var(--font-rubik);
+
+  --border-radius: 8px;
+  --main-padding-bottom: 80px;
+
+  --color-black: #000;
+  --color-text-black: #1A1A1A;
+  --color-black-025: rgba(0, 0, 0, 0.25);
+  --color-black-050: rgba(0, 0, 0, 0.5);
+
+  --color-grey-light: #a9809e;
+
+  --color-white: #fff;
+  --color-white-03: rgba(255, 255, 255, 0.3);
+  --color-white-06: rgba(255, 255, 255, 0.6);
+  --color-white-07: rgba(255, 255, 255, 0.7);
+  --color-blue: #83cbff;
+  --color-cyan: #22c0ff;
+  --color-yellow: #fed67f;
+  --color-gold: #ffd700;
+
+  --color-bet-light: #ff3bbf;
+  --color-bet-light-light: color-mix(in srgb, var(--color-bet-light) 80%, white);
+  --color-bet-dark: #7a2eff;
+  --color-bet-dark-light: color-mix(in srgb, var(--color-bet-dark) 60%, white);
+  --color-bet-red: #ff6a2a;
+  --color-bet-red-light: color-mix(in srgb, var(--color-bet-red) 90%, white);
+
+  --color-button-main: rgba(34, 157, 218, 0.9);
+  --color-button-secondary: rgba(138, 44, 210, 0.8);
+  --color-button-tertiary: rgba(169, 128, 158, 0.9);
+  --color-button-danger: rgba(255, 82, 82, 0.9);
+  --button-backdrop-filter: blur(3px) brightness(4) contrast(2);
+
+  --color-main: var(--color-button-main);
+
+  --font-color: var(--color-black);
+
+  --bg-color: rgb(15, 1, 20);
+  --bg-color-light: rgb(119, 15, 140);
+
+  --background-html: radial-gradient(ellipse at top, var(--bg-color-light), var(--bg-color));
+
+  --box-shadow: 0 2px 4px 0 var(--color-black-025);
+}

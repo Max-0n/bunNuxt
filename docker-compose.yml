@@ -1,0 +1,69 @@
+services:
+  postgres:
+    image: postgres:17.6
+    container_name: postgres_triple_db_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: triple_db_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend_pg_net
+      - default
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: triple_backend
+    command: /entrypoint.dev.sh
+    ports:
+      - "7078:7078"
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app/backend
+      - /app/backend/node_modules
+    restart: on-failure:5
+    networks:
+      - default
+      - backend_pg_net
+
+  backend-dev:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: triple_backend_dev
+    command: /entrypoint.dev.sh
+    ports:
+      - "7079:7079"
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app/backend
+      - /app/backend/node_modules
+    restart: on-failure:5
+    networks:
+      - default
+      - backend_pg_net
+
+  promtail_prod:
+    image: grafana/promtail:latest
+    container_name: promtail_horse_prod
+    volumes:
+      - /var/log:/var/log
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail-config-prod.yaml:/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml
+    restart: unless-stopped
+
+networks:
+  backend_pg_net:
+    external: true
+
+volumes:
+  postgres_data:

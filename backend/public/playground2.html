@@ -1,0 +1,1315 @@
+<!doctype html>
+<html lang='en' data-bs-theme="dark">
+<head>
+  <title>Gamedev admin panel</title>
+  <link rel="icon" href="/public/favicon.ico" type="image/x-icon">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <style>
+    :root {
+      --prod-background: #3b050a;
+      --prod-secondary-background: #3b050a;
+      --prod-secondary-hover-background: #7d0707;
+      --prod-secondary-active-background: #790808;
+      --prod-control-background: #150000;
+      --prod-control-border-color: #000000;
+      --prod-scroll-color: #790708;
+      --prod-text-color: #c8c8c8;
+      --prod-header-color: #c7cbcf;
+      --prod-disabled-color: #734545;
+
+      --background: #30306d;
+      --secondary-background: #30306d;
+      --secondary-hover-background: #585a5c;
+      --secondary-active-background: #6f7173;
+      --scroll-color: #585a5c;
+      --scroll-background: #000000aa;
+      --text-color: #c7cbcf;
+      --header-color: #c7cbcf;
+      --highlight-color: #f5f6f7;
+      --disabled-color: #6f7173;
+      --link-color: #879cb2;
+      --link-hover-color: #9fb0c1;
+      --control-background: #30306d;
+      --control-border-color: #666;
+      --control-border-radius: 4px;
+      --control-error-border-color: #e74c3c;
+
+      --button-background: #585a5c;
+      --button-hover-background: #6f7173;
+      --button-pressed-background: #2c2d2e;
+
+      --color-blue: #375a7f;
+      --color-indigo: #6610f2;
+      --color-purple: #6f42c1;
+      --color-pink: #e83e8c;
+      --color-red: #e74c3c;
+      --color-orange: #fd7e14;
+      --color-yellow: #f39c12;
+      --color-green: #00bc8c;
+      --color-teal: #20c997;
+      --color-cyan: #3498db;
+      --color-black: #000;
+      --color-white: #fff;
+      --color-gray: #888;
+      --color-gray-dark: #303030;
+    }
+
+    html, body, section, main, nav, menu, h1, div, span, ul, li, table, thead, tbody, tr, th, td, p {
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      font-size: 15px;
+      background-color: var(--background);
+      color: var(--text-color);
+      scrollbar-color: var(--scroll-color) var(--scroll-background);
+    }
+
+    header {
+      text-align: center;
+    }
+
+    .header {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+
+    .header h1 {
+      padding: 0;
+      text-align: left;
+    }
+
+    .header-icon {
+      padding: 0.6em;
+    }
+
+    .server-name {
+      display: block;
+      color: var(--header-color);
+      font-size: 13px;
+      max-width: 180px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    nav {
+      width: 240px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--secondary-background);
+    }
+
+    menu {
+      list-style-type: none;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    menu > li {
+      padding: 0.4em 0 0.4em 1em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      .icon {
+        min-width: 1.5em;
+        display: inline-block;
+        text-align: left;
+      }
+    }
+
+    menu > li.section {
+      font-size: 0.95em;
+      font-weight: 600;
+      padding-top: 1em;
+      text-transform: uppercase;
+      color: var(--highlight-color);
+    }
+
+    menu > li:not(.section) {
+      padding-left: 1.5em;
+      cursor: pointer;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    menu > li:not(.section)[disabled] {
+      cursor: unset;
+      color: var(--disabled-color);
+    }
+
+    menu > li:not(.section):not([disabled]):hover {
+      color: var(--highlight-color);
+      background-color: var(--secondary-hover-background);
+      box-shadow: 0 -0.2em 0 0 var(--secondary-hover-background),
+        0 0.2em 0 0 var(--secondary-hover-background);
+    }
+
+    menu > li:not(.section):not([disabled])[aria-selected="true"] {
+      color: var(--highlight-color);
+      background-color: var(--secondary-active-background);
+      box-shadow: 0 -0.2em 0 0 var(--secondary-active-background),
+        0 0.2em 0 0 var(--secondary-active-background);
+    }
+
+    main {
+      height: 100%;
+      display: flex;
+      gap: 1em;
+    }
+
+    main#login > section {
+      display: flex;
+      margin: 0 auto;
+      width: 50%;
+      min-width: 640px;
+      height: 100%;
+      align-items: center;
+    }
+
+    main#login > section > .textarea-wrapper {
+      width: 100%;
+      height: 50%;
+    }
+
+    main#playground > div.request-response {
+      display: flex;
+      flex: 2;
+      height: 100%;
+      gap: 1em;
+      margin-right: 1em;
+      @media screen and (max-width: 1024px) {
+        flex-direction: column;
+        .group {
+          flex-wrap: wrap;
+          .item:first-child {
+            width: 100%;
+          }
+          .item:not(:first-child) {
+            margin: 0 1em 0 0;
+          }
+        }
+      }
+    }
+
+    div.request-response > section {
+      display: flex;
+      flex-direction: column;
+      flex: 2;
+      height: 100%;
+    }
+
+    h1 {
+      font-size: 1.5em;
+      font-weight: 700;
+      padding: 0.5em 0;
+      color: var(--highlight-color);
+    }
+
+    h2 {
+      font-size: 1.2em;
+      font-weight: 700;
+      padding: 0.2em 0 0;
+      color: var(--highlight-color);
+    }
+
+    a {
+      text-decoration: none;
+      color: var(--link-color);
+    }
+
+    a:hover {
+      text-decoration: underline;
+      color: var(--link-hover-color);
+    }
+
+    strong {
+      font-weight: 700;
+      color: var(--highlight-color);
+      text-transform: uppercase;
+    }
+
+    p + p {
+      padding-top: 0.3em;
+    }
+
+    [disabled] {
+      color: var(--disabled-color);
+    }
+
+    textarea {
+      padding: 0.5em;
+      font-size: 0.9em;
+      margin: 0;
+      box-sizing: border-box;
+      border: 1px solid var(--control-border-color);
+      background-color: var(--control-background);
+      color: var(--text-color);
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: var(--control-border-color);
+    }
+
+    textarea.error, textarea.error:focus {
+      border-color: var(--control-error-border-color);
+    }
+
+    .textarea-wrapper > textarea {
+      width: 100%;
+      height: 100%;
+      resize: none;
+    }
+
+    pre {
+      height: 100%;
+      padding: 0.5em;
+      margin: 0;
+      box-sizing: border-box;
+      border: 1px solid var(--control-border-color);
+      background-color: var(--control-background);
+      color: var(--text-color);
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-size: 0.9em;
+    }
+
+
+    .tab-control {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tab-control input[type="radio"] {
+      display: none;
+    }
+
+    .tab-control [role="tabpanel"] {
+      flex-grow: 1;
+      overflow: hidden;
+      display: none;
+      height: 0;
+    }
+
+    .tab-control input[type="radio"]:nth-of-type(1):checked ~ [role="tabpanel"]:nth-of-type(1),
+    .tab-control input[type="radio"]:nth-of-type(2):checked ~ [role="tabpanel"]:nth-of-type(2),
+    .tab-control input[type="radio"]:nth-of-type(3):checked ~ [role="tabpanel"]:nth-of-type(3),
+    .tab-control input[type="radio"]:nth-of-type(4):checked ~ [role="tabpanel"]:nth-of-type(4) {
+      display: block;
+    }
+
+    .tab-control input[type="radio"]:nth-of-type(1):checked ~ ul[role="tablist"] > li:nth-child(1) label,
+    .tab-control input[type="radio"]:nth-of-type(2):checked ~ ul[role="tablist"] > li:nth-child(2) label,
+    .tab-control input[type="radio"]:nth-of-type(3):checked ~ ul[role="tablist"] > li:nth-child(3) label,
+    .tab-control input[type="radio"]:nth-of-type(4):checked ~ ul[role="tablist"] > li:nth-child(4) label {
+      color: var(--highlight-color);
+      box-shadow: inset 0 -2px var(--highlight-color);
+    }
+
+    .tab-control ul[role="tablist"] {
+      list-style: none;
+      padding-top: 0.5em;
+      padding-bottom: 0.5em;
+    }
+
+    .tab-control ul[role="tablist"] li[role="tab"] {
+      display: inline-block;
+      margin-right: 1em;
+    }
+
+    .tab-control ul[role="tablist"] li[role="tab"]:last-child {
+      margin-right: 0;
+    }
+
+    .tab-control ul[role="tablist"] li[role="tab"] label {
+      cursor: pointer;
+      font-size: 0.95em;
+      font-weight: 600;
+      padding-bottom: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .icon:before, .icon:before, .icon:before, li[role="tab"].warning:after {
+      font-family: "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Fira Sans", "Droid Sans", "Helvetica Neue";
+      height: 1em;
+      display: inline-block;
+    }
+
+    .icon:before {
+      min-width: 1.25em;
+    }
+
+    .icon[icon="success"]:before {
+      content: "✅";
+    }
+
+    .icon[icon="warning"]:before, li[role="tab"].warning:after {
+      content: "⚠️";
+    }
+
+    .icon[icon="error"]:before {
+      content: "🚫";
+    }
+
+    .icon[icon="mushroom"]:before {
+      content: "🍄";
+    }
+
+    .icon[icon="envelope"]:before {
+      content: "📩";
+    }
+
+    .icon[icon="send"]:before {
+      content: "→";
+    }
+
+    .icon[icon="copy"]:before {
+      content: "⧉";
+    }
+
+    .done {
+      .icon[icon="copy"]:before {
+        content: "✔";
+      }
+    }
+
+    .icon[icon="download"]:before {
+      content: "⬇";
+    }
+
+    .icon[icon="token"]:before {
+      content: "#";
+    }
+
+    .icon + span, .icon + strong, li[role="tab"].warning:after {
+      margin-left: 0.5em;
+    }
+
+    table {
+      border-spacing: 0;
+    }
+
+    .table-wrapper {
+      overflow: auto;
+    }
+
+    table th {
+      font-size: 0.95em;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--highlight-color);
+      background-color: var(--secondary-background);
+      padding: 0.5em 0;
+      text-align: center;
+      min-width: 100px;
+      border-right: 1px solid var(--control-border-color);
+      border-bottom: 1px solid var(--control-border-color);
+    }
+
+    table th:last-child {
+      border-right: none;
+    }
+
+    table td {
+      padding: 0.5em 0.2em;
+      min-width: 100px;
+      border-right: 1px solid var(--control-border-color);
+      border-bottom: 1px solid var(--control-border-color);
+    }
+
+    table td:first-child {
+      white-space: nowrap;
+    }
+
+    table td:last-child {
+      font-size: 0.9em;
+      font-family: monospace;
+      border-right: none;
+    }
+
+    table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .group {
+      display: flex;
+    }
+
+    .group .item:first-child {
+      flex-grow: 1;
+    }
+
+    div + div.group {
+      padding-top: 0.2em;
+    }
+
+    .button-area {
+      padding-top: 0.5em;
+      text-align: center;
+    }
+
+    .hint {
+      font-size: 85%;
+    }
+
+    .hint.error {
+      color: var(--control-error-border-color);
+    }
+
+    .avatar {
+      display: inline-block;
+      width:36px;
+      height:36px;
+      border-radius: 50%;
+      background-size: contain;
+      border: 1px solid var(--color-gray);
+      vertical-align: middle;
+    }
+
+    .avatar + span {
+      padding-left: 0.5em;
+      vertical-align: middle;
+    }
+
+    button {
+      background-color: var(--button-background);
+      color: var(--highlight-color);
+      font-weight: bold;
+      padding: 0.5em;
+      border: none;
+      border-radius: var(--control-border-radius);
+      cursor: pointer;
+      white-space: nowrap;
+      margin: 1em 0 1em 1em;
+      min-height: 3em;
+      min-width: 8em;
+      @media screen and (max-width: 1024px) {
+        margin: 0 0 .25em 0;
+      }
+    }
+
+    button:hover {
+      background-color: var(--button-hover-background);
+    }
+
+    button:active {
+      background-color: var(--button-pressed-background);
+    }
+
+    .json-key {
+      color: var(--color-cyan)
+    }
+
+    .json-string {
+      color: var(--color-teal)
+    }
+
+    .json-number {
+      color: var(--color-yellow);
+    }
+
+    .json-boolean {
+      color: var(--color-orange);
+    }
+
+    .json-null {
+      color: var(--color-pink);
+    }
+
+    .json-mark {
+      opacity: .7;
+    }
+  </style>
+</head>
+<body>
+<main id="login" style="display: none">
+  <section>
+    <div class="textarea-wrapper">
+      <textarea id="login-initdata" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+    </div>
+  </section>
+</main>
+<main id="playground">
+  <nav>
+    <div class="header">
+      <div class="header-icon">
+        <span id="user-avatar" class="avatar" style="background-image: url('https://cdn.hamsterkombatgame.io/tt/AQADZqgxG4G0uwgAAQ.jpg')"></span>
+      </div>
+      <div class="header-title">
+        <h1>Admin panel</h1>
+        <div class="server-name"></div>
+      </div>
+    </div>
+    <menu class="vertical-scroll-container" id="endpoints"></menu>
+  </nav>
+  <div class="request-response">
+    <section>
+      <div class="group">
+        <div class="item">
+          <h2>Request</h2>
+        </div>
+        <div class="item">
+          <button id="send">Send <span class="icon" icon="send"></span></button>
+        </div>
+      </div>
+      <div class="group">
+        <span class="icon" icon="envelope"></span><strong id="request-method" disabled>No request</strong>&nbsp;<span id="request-path" disabled></span>
+      </div>
+      <div class="tab-control" style="flex-grow: 1;">
+        <input type="radio" name="request-tabs" id="request-tabs-params" value="request-tabs-params" checked />
+        <input type="radio" name="request-tabs" id="request-tabs-auth" value="request-tabs-auth" />
+
+        <ul role="tablist">
+            <li role="tab"><label for="request-tabs-params">Params</label></li>
+            <li role="tab"><label for="request-tabs-auth">Authorization</label></li>
+        </ul>
+
+        <div role="tabpanel" class="textarea-wrapper">
+          <textarea id="request-params" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+          <pre id="request-params-empty" style="display: none;"><i disabled>No params</i></pre>
+        </div>
+        <div role="tabpanel" class="textarea-wrapper">
+          <textarea id="request-auth" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+          <pre id="request-auth-empty" style="display: none;"><i disabled>No authorization</i></pre>
+        </div>
+      </div>
+      <div class="group" style="display: none">
+        <div class="item">
+          <!-- <button id="send">Send</button>
+          <button id="reset-params">Reset</button> -->
+        </div>
+        <div class="item hint" id="request-params-status">
+        </div>
+      </div>
+    </section>
+    <section>
+      <div class="group">
+        <div class="item">
+          <h2>Response</h2>
+        </div>
+        <div class="item">
+          <button id="copy"><span class="icon" icon="copy"></span> Copy</button>
+        </div>
+        <div class="item">
+          <button id="download"><span class="icon" icon="download"></span> Download</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="item">
+          <span class="icon" icon="envelope"></span><strong id="response-request-method" disabled>No request</strong>&nbsp;<span id="response-request-path" disabled></span>
+        </div>
+        <div class="item">
+          <span class="icon" icon="mushroom" id="response-status-icon"></span><strong id="response-status-code" disabled>No response</strong>&nbsp;<span id="response-status-text"></span>&nbsp;&nbsp;<span id="response-time" disabled></span>
+        </div>
+      </div>
+      <div class="tab-control" style="flex-grow: 1">
+        <input type="radio" name="response-tabs" id="response-tabs-body" value="response-tabs-body" checked />
+        <input type="radio" name="response-tabs" id="response-tabs-headers" value="response-tabs-headers" />
+        <input type="radio" name="response-tabs" id="response-tabs-payload" value="response-tabs-payload" />
+
+        <ul role="tablist">
+            <li role="tab"><label for="response-tabs-body">Response</label></li>
+            <li role="tab"><label for="response-tabs-headers">Headers</label></li>
+            <li role="tab"><label for="response-tabs-payload">Payload</label></li>
+        </ul>
+
+        <div role="tabpanel">
+          <pre id="response-body" tabindex="0"></pre>
+        </div>
+        <div role="tabpanel">
+          <table style="width: 100%">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th width="100%">Value</th>
+              </tr>
+            </thead>
+            <tbody id="response-headers">
+              <tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div role="tabpanel">
+          <pre id="response-payload">
+          </pre>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src=https://cdn.jsdelivr.net/npm/pretty-print-json@3.0/dist/pretty-print-json.min.js defer></script>
+<script>
+  const LS_AUTH_TOKEN = 'authToken'
+  const LS_SELECTED = 'selected'
+
+  function isProd() {
+    return ['scanbeasts.com'].includes(location.hostname)
+  }
+
+  function setCSSVar(key, value) {
+    document.documentElement.style.setProperty(key, value)
+  }
+
+  function getCSSVar(key) {
+    return getComputedStyle(document.documentElement, null).getPropertyValue(key)
+  }
+
+  function replaceProdColors(colors) {
+    colors.forEach(color => setCSSVar('--' + color, getCSSVar('--prod-' + color)))
+  }
+
+  if (isProd()) {
+    replaceProdColors([
+      'background', 'secondary-background', 'secondary-hover-background',
+      'secondary-active-background', 'control-background', 'control-border-color', 'scroll-color', 'disabled-color'
+    ])
+  }
+
+  function $(selector) {
+  const elements = ((selector) => {
+    if (typeof selector !== 'string') {
+      return [selector]
+    }
+    if (selector.startsWith('#')) {
+      const e = document.getElementById(selector.substring(1))
+      return e ? [e] : []
+    }
+    if (selector.startsWith('.')) {
+      return [...document.getElementsByClassName(selector.substring(1))]
+    }
+
+    return [...document.querySelectorAll(selector)]
+  })(selector)
+
+  function html(value) {
+    if (value === undefined)
+      return elements.length ? elements[0].innerHTML : undefined
+
+    elements.forEach(e => { e.innerHTML = value })
+    return this
+  }
+
+  function text(value) {
+    if (value === undefined)
+      return elements.length ? elements[0].innerText : undefined
+
+    elements.forEach(e => { e.innerText = value })
+    return this
+  }
+
+  function val(value) {
+    if (value === undefined)
+      return elements.length ? elements[0].value : undefined
+
+    elements.forEach(e => { e.value = value })
+    return this
+  }
+
+  function attr(attr, value) {
+    if (value === undefined) {
+      return elements.length ? elements[0].getAttribute(attr) : undefined
+    }
+
+    elements.forEach(e => { e.setAttribute(attr, value) })
+    return this
+  }
+
+  function removeAttr(attr) {
+    elements.forEach(e => { e.removeAttribute(attr) })
+    return this
+  }
+
+  function hasClass(cls) {
+    return !elements.some(e => !e.classList.contains(cls))
+  }
+
+  function addClass(cls) {
+    return !elements.some(e => !e.classList.add(cls))
+  }
+
+  function removeClass(cls) {
+    return !elements.some(e => !e.classList.remove(cls))
+  }
+
+  function focus() {
+    if (elements.length)
+      elements[0].focus()
+    return this
+  }
+
+  function show() {
+    elements.forEach(e => { e.style.removeProperty('display') })
+    return this
+  }
+
+  function hide() {
+    elements.forEach(e => { e.style.setProperty('display', 'none') })
+    return this
+  }
+
+  function on(event, handler) {
+    elements.forEach(e => {
+      e.addEventListener(event, handler)
+    })
+    return this
+  }
+
+  function click() {
+    elements.forEach(e => e.click())
+    return this
+  }
+
+  function scrollIntoView() {
+    elements.forEach(e => e.scrollIntoView())
+    return this
+  }
+
+  function isVisibleOnScreen() {
+    return elements.reduce((acc, element) => {
+      const rect = element.getBoundingClientRect()
+      const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight)
+      acc = !(rect.bottom < 0 || rect.top - viewHeight >= 0)
+      return acc
+    }, false)
+  }
+
+  function select() {
+    elements.forEach(e => window.getSelection().selectAllChildren(e))
+    return this
+  }
+
+  return {
+    html,
+    text,
+    val,
+    attr,
+    removeAttr,
+    hasClass,
+    addClass,
+    removeClass,
+    focus,
+    show,
+    hide,
+    on,
+    click,
+    scrollIntoView,
+    isVisibleOnScreen,
+    select,
+  }
+}
+
+function escapeHtml(str) {
+    if (!str)
+        return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#039;', '…': '&hellip;' };
+    return str.replace(/[&<>"'…]/g, m => map[m]);
+}
+
+function formatSize(size) {
+    if (size < 10000)
+        return size + 'b';
+    if (size < 900 * 1024)
+        return (Math.round(size * 10 / 1024) / 10) + 'kb';
+
+    return (Math.round(size * 10 / 1024 / 1024) / 10) + 'Mb';
+}
+
+function validateParams() {
+  const el = $('#request-params')
+  const value = el.val()
+  try {
+    JSON.parse(value)
+    el.removeClass('error')
+    $('#request-params-status').html('&nbsp;').removeClass('error')
+  } catch (err) {
+    el.addClass('error')
+    $('#request-params-status').text(`${err.message.replaceAll('\n', ' ')}`).addClass('error')
+  }
+}
+
+function renderEmptyHeaders() {
+  $('#response-headers').html('<tr><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr>')
+}
+
+function renderHeaders(headers) {
+  if (!headers) {
+    renderEmptyHeaders()
+    return
+  }
+
+  const html = []
+  for (const it of headers.entries()) {
+    html.push(`<tr><td>${escapeHtml(it[0])}</td><td>${escapeHtml(it[1])}</td>`)
+  }
+
+  if (!html.length) {
+    renderEmptyHeaders()
+    return
+  }
+
+  $('#response-headers').html(html.join(''))
+}
+
+function renderResponse(data) {
+  if (!data)
+    return '<i disabled>No data</i>'
+
+  if (typeof prettyPrintJson !== 'undefined') {
+    return prettyPrintJson.toHtml(data, {
+      indent: 2, linkUrls: true, quoteKeys: true, trailingCommas: false
+    })
+  } else {
+    return JSON.stringify(data, null, 2)
+  }
+}
+
+function setRequest(item, token) {
+  localStorage.setItem(LS_SELECTED, item.element)
+
+  $('#request-method').text(item.method).removeAttr('disabled')
+
+  $('#request-path').text(item.path).removeAttr('disabled')
+  if (typeof item.params === 'string') {
+    $('#request-params').show().val(item.params).focus()
+    $('#request-params-empty').hide()
+    validateParams()
+  } else {
+    $('#request-params').hide()
+    $('#request-params-empty').show()
+    $('#request-params-status').html('&nbsp;').removeClass('error')
+  }
+
+  if (typeof item.auth === 'string') {
+    $('#request-auth').show().val(token)
+    $('#request-auth-empty').hide()
+  } else {
+    $('#request-auth').hide()
+    $('#request-auth-empty').show()
+  }
+
+  $('.endpoint').removeAttr('aria-selected')
+  $('#' + item.element).attr('aria-selected', true)
+
+  return item
+}
+
+function updateToken(name, value, updateInput) {
+  if (value) {
+    localStorage.setItem(name, value)
+  } else {
+    localStorage.removeItem(name)
+  }
+
+  if (updateInput) {
+    $('#request-auth').val(value || '')
+  }
+}
+
+function parseJsonSafe(value) {
+  try {
+    return JSON.parse(value)
+  } catch (e) {
+    return null
+  }
+}
+
+function substituteParams(path, params) {
+  if (!path.includes(':') || !params)
+    return path
+
+  return path.replace(/:([\w]+)/g, (m, arg) => {
+    if (arg in params)
+      return params[arg]
+
+    return ':' + arg
+  })
+}
+
+function buildPath(item, params) {
+  const path = substituteParams(item.path, params)
+  if (!path.includes('>'))
+    return path
+
+  return path.substring(0, path.indexOf('>')).trim()
+}
+
+function buildContentType(item, params) {
+  if (params && (item.method === 'POST' || item.method === 'PUT'))
+    return { 'Content-Type': 'application/json' }
+  if (item.method === 'CMD')
+    return { 'Content-Type': 'application/json' }
+  return {}
+}
+
+function buildAuthoriation(item, auth) {
+  if (item.auth)
+    return { 'Authorization': auth || '' }
+  return {}
+}
+
+function buildCmdBody(item, params) {
+  const type = item.path.substring(item.path.indexOf('>') + 1).trim()
+  if (!type)
+    return null
+
+  if (!params)
+    return { command: { type } }
+
+  return { command: { type, ...params } }
+}
+
+function buildBody(item, params) {
+  if (item.method === 'POST' || item.method === 'PUT')
+    return params || null
+
+  if (item.method === 'CMD')
+    return buildCmdBody(item, params)
+
+  return null
+}
+
+function buildMethod(item) {
+  return item.method === 'CMD' ? 'POST' : item.method
+}
+
+function sendRequest(item, auth) {
+  const method = buildMethod(item)
+  const params = parseJsonSafe(item.params)
+  const path = buildPath(item, params)
+  const body = buildBody(item, params)
+
+  $('#response-request-method').text(method).removeAttr('disabled')
+  $('#response-request-path').text(path).removeAttr('disabled')
+  $('#response-payload').html(renderResponse(body))
+  $('#response-status-icon').attr('icon', 'mushroom')
+  $('#response-status-code').text('No response').attr('disabled', '')
+  $('#response-status-text').text('')
+  $('#response-time').text('')
+  $('#response-body').html('')
+  renderEmptyHeaders()
+
+  const start = Date.now()
+  return fetch(path, {
+    method,
+    headers: {
+      ...buildContentType(item, params),
+      ...buildAuthoriation(item, auth),
+    },
+    ...body ? { body: JSON.stringify(body) } : {},
+  }).then(response => {
+    $('#response-status-code').text(response.status.toString()).removeAttr('disabled')
+    $('#response-status-text').text(response.statusText)
+    if (response.status === 200) {
+      $('#response-status-icon').attr('icon', 'success')
+    } else if (response.status === 400) {
+      $('#response-status-icon').attr('icon', 'warning')
+    } else {
+      $('#response-status-icon').attr('icon', 'error')
+    }
+    renderHeaders(response.headers)
+    return Promise.all([response.arrayBuffer(), response.status])
+  }).then(([bytes, status]) => {
+    $('#response-time').text(`${formatSize(bytes.byteLength)}, ${Date.now() - start}ms`)
+    const text = new TextDecoder().decode(bytes);
+    if (!text)
+      return [status, null]
+
+    try {
+      const data = JSON.parse(text)
+      $('#response-body').html(renderResponse(data))
+
+      return [status, data]
+    } catch (err) {
+      $('#response-body').text(text)
+
+      return [status, null]
+    }
+  }).catch(error => {
+    $('#response-status-icon').attr('icon', 'error')
+    $('#response-status-code').text(error.name)
+    $('#response-body').text(error.message)
+
+    return [error, null]
+  })
+}
+
+function nameToId(name) {
+  return name.toLowerCase().replaceAll(' ', '_')
+}
+
+function pathToId(path, suffix) {
+  return path.toLowerCase().replace(/[^\w]/g, '_') + (suffix || '')
+}
+
+function renderItems(items) {
+  return items.map(it => {
+    if (it.section)
+      return `<li class="section">${it.section}</li>`
+
+    const id = pathToId(it.path || '', it.pathSuffix)
+    const icon = it.icon ? `<span class="icon">${it.icon}</span>` : ''
+    return `<li id="${id}" class="endpoint"${it.path ? '' : ' disabled'}>${icon}${it.name}</li>`
+  }).join('')
+}
+
+function buildRequests(items) {
+  const result = {}
+
+  items.filter(it => it.path).forEach(it => {
+    const element = pathToId(it.path, it.pathSuffix)
+    const pathParts = it.path.split(':')
+    const method = pathParts.length > 1 ? pathParts[0] : 'POST'
+    const path = pathParts.length > 1 ? pathParts.slice(1).join(':') : pathParts[0]
+    const params = it.params ? JSON.stringify(it.params, null, 2) : null
+    const paramsDefault = params
+    const auth = it.auth === null ? null : it.auth || LS_AUTH_TOKEN
+    const authFrom = it.auth === null ? null : it.authFrom || null
+
+    result[element] = { element, method, path, params, paramsDefault, auth, authFrom }
+  })
+
+  return result
+}
+
+function restoreAuths(items) {
+  const result = {}
+
+  items.forEach(it => {
+    const auth = it.auth === null ? null : it.auth || LS_AUTH_TOKEN
+    if (!auth || result[auth])
+      return;
+
+    result[auth] = localStorage.getItem(auth) || ''
+  })
+
+  return result
+}
+
+function main(...items) {
+  const requests = buildRequests(items)
+  const auths = restoreAuths(items)
+
+  let selected = null
+  let lastResponse = null
+
+  function sendSelectedRequest() {
+    if (!selected)
+      return
+    const item = selected
+
+    if (item.path === 'authWithToken') {
+      const params = parseJsonSafe(item.params)
+      auths['authToken'] = params.authToken
+      updateToken(LS_AUTH_TOKEN, params.authToken, true)
+      $('#response-body').text('Auth token successfully updated')
+      return
+    }
+
+    if (item.auth && auths[item.auth])
+      updateToken(item.auth, auths[item.auth], false)
+
+    sendRequest(selected, auths[item.auth || '']).then(([status, data]) => {
+      lastResponse = data
+      if (item.authFrom && status === 200 && data && typeof data[item.authFrom] === 'string') {
+        const value = 'Bearer ' + data[item.authFrom]
+        auths[item.auth] = value
+        updateToken(item.auth, value, selected.auth === item.auth)
+      } else if (item.auth && status === 401) {
+        delete auths[item.auth]
+        updateToken(item.auth, null, selected.auth === item.auth)
+      }
+    })
+  }
+
+  const convertToValidFileName = (string) => {
+    return (string.replace(/[\/|\\:*?"<>]/g, "-"))
+  }
+
+  const downloadFile = (fileName, content) => {
+    const link = document.createElement("a")
+    const file = new Blob([content], { type: 'text/plain' })
+    link.href = URL.createObjectURL(file)
+    link.download = convertToValidFileName(fileName)
+    link.click()
+    URL.revokeObjectURL(link.href)
+  };
+
+  $('#endpoints').html(renderItems(items)).on('click', e => {
+    const el = $(e.target)
+    const item = requests[el.attr('id')]
+    if (item) {
+      selected = setRequest(item, auths[item.auth || ''])
+    }
+    e.preventDefault()
+    e.stopPropagation()
+  })
+
+  $('#endpoints').html(renderItems(items)).on('dblclick', e => {
+    const el = $(e.target)
+    const item = requests[el.attr('id')]
+    if (item) {
+      sendSelectedRequest()
+    }
+    e.preventDefault()
+    e.stopPropagation()
+  })
+
+  $('#request-params').on('input', e => {
+    if (!selected || typeof selected.params !== 'string')
+      return
+
+    const el = $(e.target)
+    const value = el.val()
+    selected.params = value
+    validateParams()
+  })
+
+  $('#request-auth').on('input', e => {
+    if (!selected || typeof selected.auth !== 'string')
+      return
+
+    const el = $(e.target)
+    const value = el.val()
+    auths[selected.auth] = value
+  })
+
+  $('#send').on('click', e => {
+    sendSelectedRequest()
+  })
+
+  $('#copy').on('click', e => {
+    navigator.clipboard.writeText(JSON.stringify(lastResponse, null, 2))
+    const button = $('#copy')
+    const done = 'done'
+    if (!button.hasClass(done)) button.addClass(done)
+    setTimeout(() => button.removeClass(done), 2000)
+  })
+
+  $('#download').on('click', e => {
+    if (!selected) return
+    const now = new Date().toISOString()
+    const fileName = `${now}-${location.hostname}${selected.path}.txt`
+    const content = JSON.stringify(lastResponse, null, 2)
+    downloadFile(fileName, content)
+  })
+
+  $('#reset-params').on('click', e => {
+    if (!selected || typeof selected.params !== 'string')
+      return
+
+    selected.params = selected.paramsDefault
+    $('#request-params').val(selected.params).focus()
+    validateParams()
+  })
+
+  $('#clear-auth').on('click', e => {
+    if (!selected || typeof selected.auth !== 'string')
+      return
+
+    updateToken(selected.auth, null, true)
+  })
+
+  document.onkeydown = function(e) {
+    const isCtrlPressed = (e.metaKey || e.ctrlKey)
+    if (isCtrlPressed && e.code === 'Enter' && !e.shiftKey && !e.altKey) {
+      sendSelectedRequest()
+      e.preventDefault();
+      return
+    }
+    if (isCtrlPressed && e.code === 'KeyA') {
+      if (document.activeElement === document.getElementById('response-body')) {
+        $('#response-body').select()
+        e.preventDefault();
+      }
+    }
+  }
+
+  document.title += ' - ' + location.hostname
+  $('.server-name').text(location.hostname)
+
+  const previous_selection = localStorage.getItem(LS_SELECTED)
+  if (!previous_selection) {
+    $('#post__admin_season2_get_user').click()
+  } else {
+    const item = $('#' + previous_selection)
+    item.click()
+    if (!item.isVisibleOnScreen()) {
+      item.scrollIntoView()
+    }
+  }
+}
+</script>
+<script type="text/javascript">
+  const defaultAuthToken = localStorage.getItem(LS_AUTH_TOKEN)
+/**
+ * Собственно в main передается список ручек, которые можно вызывать
+ * В каждом элементе можно указать следующие параметры:
+ * - section - начать секцию с указанным именем
+ * - name - добавить пункт с этим названием для endpoint
+ * - path - путь до endpoint. если не указать - пункт будет disabled. задается в
+ *    формате [<method>:]<path> (например, GET:/foo/bar),
+ *    <method> по умолчанию - POST
+ * - params - параметры запроса по умолчанию. как именно они будут передаваться,
+ *    зависит от метода. для POST - передаются через body
+ * - auth - используемый токен для авторизации. по умолчанию 'authToken'. если
+ *    задать null - то для данного endpoint не будет использовать токен
+ * - authFrom - из какого поля в ответе установить токен заданный через auth
+ *
+ *  Минимально необходимо указать или section или name
+ */
+main(
+{ section: 'Auth' },
+{ name: 'Auth By UserId', path: '/auth/auth-by-user-id', authFrom: 'authToken',
+  params: { authUserId: '' } },
+{ name: 'Auth With Token', path: 'authWithToken', authFrom: 'authToken',
+  params: { authToken: defaultAuthToken ? defaultAuthToken.toString() : 'Bearer ' } },
+{ name: 'Me (Game)', path: 'GET:/api/user/me', authFrom: 'authToken' },
+
+{ section: '👾 Tools' },
+{ name: 'Wallet TON Deploy', path: 'GET:/admin/wallet-ton-deploy', authFrom: 'authToken' },
+{ name: 'Wallet NFT Deploy', path: 'GET:/admin/wallet-nft-deploy', authFrom: 'authToken' },
+{ name: 'Create Wallet (mnemonic + address)', path: 'GET:/admin/create-wallet', authFrom: 'authToken' },
+{ name: 'Get NFTs', path: 'GET:/admin/nfts', authFrom: 'authToken' },
+{ name: 'Update NFTs', path: 'GET:/admin/nfts/update', authFrom: 'authToken' },
+{ name: 'Send NFT', path: 'POST:/admin/nft/send', authFrom: 'authToken',
+  params: { nftAddress: '', toAddress: '', forwardAmountTon: '0', sendAmountTon: '', comment: '', responseAddress: '', queryId: '' } },
+{ section: '🎮 Game' },
+{ name: 'Bet', path: 'POST:/bet', authFrom: 'authToken', params: { amount: '10' } },
+{ name: 'Generate Radnom Bet', path: 'POST:/admin/v1/bet/generate', authFrom: 'authToken', params: { amount: '' } },
+{ name: 'Create Round', path: 'GET:/admin/v1/round/create', authFrom: 'authToken' },
+
+// { name: 'Delete User', path: 'DELETE:/api/admin/v1/user/:userId', authFrom: 'authToken', params: { userId: '' } },
+// { name: 'Add Sparks', path: 'POST:/api/admin/v1/sparks/add', authFrom: 'authToken', params: { userId: '',  sparks: 0 } },
+// { name: 'Apply Config', path: 'POST:/api/admin/v1/config', authFrom: 'authToken', params: { constantsVersion: 1,  slotsVersion: 1, inapsVerion: 1, tasksVerion: 1,} },
+
+// { section: '😈 Monsters 😈' },
+// { name: 'Get Monsters List', path: '/api/v1/monsters-list', authFrom: 'authToken', params: { limit: 10, offset: 0, status: 'COMPLETED' } },
+// { name: 'Get Monsters By Id', path: 'GET:/api/v1/monster/:monsterId', authFrom: 'authToken', params: { monsterId: '' } },
+// { name: 'Generate Monster', path: 'POST:/api/v1/generate', authFrom: 'authToken', params: { productId: '', promptId: '' } },
+// { name: 'Get Monster Image', path: 'POST:/api/v1/get-image', authFrom: 'authToken', params: { requestId: '' } },
+// { name: 'Delete Monster', path: 'DELETE:/api/v1/monster/:monsterId', authFrom: 'authToken', params: { monsterId: '' } },
+// { name: 'Feed Monster', path: 'POST:/api/v1/monster/feed', authFrom: 'authToken', params: { monsterId: '' } },
+
+{ section: '👥 Leaderboards 👥' },
+{ name: 'UsersLeaderboard', path: 'POST:/api/admin/v1/leaderboard/user', authFrom: 'authToken', params: { userId: '' } },
+
+)
+</script>
+</body>

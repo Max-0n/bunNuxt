@@ -1,0 +1,149 @@
+name: Backend
+
+run-name: ${{ inputs.ServiceName }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      ServiceName:
+        type: choice
+        required: true
+        options:
+          - 🔥backend-prod
+          - 🍀backend-dev
+        default: 🍀backend-dev
+        description: 'Backend servers'
+
+jobs:
+  deploy_backend:
+    name: Deploy backend ${{ inputs.ServiceName }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.ServiceName == '🔥backend-prod' && 'prod' || 'dev' }}
+    permissions:
+      contents: read
+    env:
+      SERVICE_NAME: ${{ inputs.ServiceName }}
+      REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+      REMOTE_USER: ${{ secrets.REMOTE_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DATABASE: ${{ secrets.POSTGRES_DATABASE }}
+      HTTP_PORT: ${{ inputs.ServiceName == '🔥backend-prod' && '7078' || '7079' }}
+      TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+      TG_BOT_WEBHOOK_ENABLED: ${{ secrets.TG_BOT_WEBHOOK_ENABLED }}
+      TG_BOT_WEBHOOK_SECRET: ${{ secrets.TG_BOT_WEBHOOK_SECRET }}
+      TG_BOT_WEBHOOK_URL: ${{ secrets.TG_BOT_WEBHOOK_URL }}
+      TG_BOT_SET_WEBHOOK_AFTER_LAUNCH: ${{ secrets.TG_BOT_SET_WEBHOOK_AFTER_LAUNCH }}
+      APP_NAME: ${{ vars.APP_NAME }}
+      BOT_URL: ${{ vars.BOT_URL }}
+      WEB_APP_URL: ${{ vars.WEB_APP_URL }}
+      WELCOME_IMAGE: ${{ vars.WELCOME_IMAGE }}
+      TON_ADDRESS: ${{ vars.TON_ADDRESS }}
+      TON_MNEMONIC: ${{ secrets.TON_MNEMONIC }}
+      TON_MNEMONIC_NFT: ${{ secrets.TON_MNEMONIC_NFT }}
+      TON_CENTER_API_URL: ${{ vars.TON_CENTER_API_URL }}
+      TON_CENTER_API_KEY: ${{ secrets.TON_CENTER_API_KEY }}
+      TON_API_URL: ${{ vars.TON_API_URL }}
+      TON_API_KEY: ${{ secrets.TON_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync openssh-client
+
+      - name: Prepare environment file
+        run: |
+          mkdir -p triple
+          cat > triple/.env <<EOF
+          APP_NAME=${APP_NAME}
+          HTTP_PORT=${HTTP_PORT}
+          POSTGRES_HOST=${POSTGRES_HOST}
+          POSTGRES_PORT=${POSTGRES_PORT}
+          POSTGRES_USER=${POSTGRES_USER}
+          POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+          POSTGRES_DATABASE=${POSTGRES_DATABASE}
+          TG_BOT_TOKEN=${TG_BOT_TOKEN}
+          TG_BOT_WEBHOOK_ENABLED=${TG_BOT_WEBHOOK_ENABLED}
+          TG_BOT_WEBHOOK_SECRET=${TG_BOT_WEBHOOK_SECRET}
+          TG_BOT_WEBHOOK_URL=${TG_BOT_WEBHOOK_URL}
+          TG_BOT_SET_WEBHOOK_AFTER_LAUNCH=${TG_BOT_SET_WEBHOOK_AFTER_LAUNCH}
+          BOT_URL=${BOT_URL}
+          WEB_APP_URL=${WEB_APP_URL}
+          WELCOME_IMAGE=${WELCOME_IMAGE}
+          TON_ADDRESS=${TON_ADDRESS}
+          TON_MNEMONIC=${TON_MNEMONIC}
+          TON_MNEMONIC_NFT=${TON_MNEMONIC_NFT}
+          TON_CENTER_API_URL=${TON_CENTER_API_URL}
+          TON_CENTER_API_KEY=${TON_CENTER_API_KEY}
+          TON_API_URL=${TON_API_URL}
+          TON_API_KEY=${TON_API_KEY}
+          EOF
+
+      - name: Configure SSH
+        run: |
+          echo "${SSH_PRIVATE_KEY}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${REMOTE_HOST} >> ~/.ssh/known_hosts
+
+      - name: Sync files to server
+        run: |
+          DEPLOY_PATH="${{ inputs.ServiceName == '🔥backend-prod' && 'triple' || 'triple-dev' }}"
+          rsync -avz -e "ssh -i /tmp/deploy_key" --exclude='frontend/' --exclude='cdn/dist/' --exclude='cdn/static/' --exclude='.git/' --exclude='node_modules/' ./ ${REMOTE_USER}@${REMOTE_HOST}:/home/${REMOTE_USER}/${DEPLOY_PATH}/
+          rsync -avz -e "ssh -i /tmp/deploy_key" triple/.env ${REMOTE_USER}@${REMOTE_HOST}:/home/${REMOTE_USER}/${DEPLOY_PATH}/
+
+      - name: Restart backend
+        run: |
+          DEPLOY_PATH_VAL="${{ inputs.ServiceName == '🔥backend-prod' && 'triple' || 'triple-dev' }}"
+          SERVICE_NAME_COMPOSE_VAL="${{ inputs.ServiceName == '🔥backend-prod' && 'backend' || 'backend-dev' }}"
+          IMAGE_NAME_VAL="${{ inputs.ServiceName == '🔥backend-prod' && 'triple_backend:latest' || 'triple_backend_dev:latest' }}"
+          WORK_DIR_VAL="/home/${REMOTE_USER}/${DEPLOY_PATH_VAL}"
+          ssh -t -i /tmp/deploy_key ${REMOTE_USER}@${REMOTE_HOST} <<EOF
+          set -e
+          WORK_DIR="${WORK_DIR_VAL}"
+          SERVICE_NAME_COMPOSE="${SERVICE_NAME_COMPOSE_VAL}"
+          IMAGE_NAME="${IMAGE_NAME_VAL}"
+          cd \${WORK_DIR} || (echo "ERROR: Cannot cd to \${WORK_DIR}" && exit 1)
+          COMPOSE_FILE="\$(pwd)/docker-compose.yml"
+          if [ ! -f docker-compose.yml ]; then
+            echo "ERROR: docker-compose.yml not found in \$(pwd)!"
+            exit 1
+          fi
+          if docker compose -f \${COMPOSE_FILE} ps \${SERVICE_NAME_COMPOSE} 2>/dev/null | grep -q "\${SERVICE_NAME_COMPOSE}"; then
+            echo "Stopping \${SERVICE_NAME_COMPOSE} containers..."
+            docker compose -f \${COMPOSE_FILE} stop \${SERVICE_NAME_COMPOSE}
+          else
+            echo "\${SERVICE_NAME_COMPOSE} containers do not exist, skipping stop..."
+          fi
+          if docker images -q \${IMAGE_NAME} 2>/dev/null | grep -q .; then
+            echo "Removing old backend image..."
+            docker rmi \${IMAGE_NAME} || true
+          else
+            echo "Backend image does not exist, skipping removal..."
+          fi
+          echo "Cleaning up Docker resources before build..."
+          docker container prune -f || true
+          docker image prune -af || true
+          docker volume prune -f || true
+          docker builder prune -af || true
+          docker system prune -af || true
+          echo "Creating external network backend_pg_net if it doesn't exist..."
+          if ! docker network inspect backend_pg_net >/dev/null 2>&1; then
+            docker network create backend_pg_net
+            echo "Network backend_pg_net created successfully"
+          else
+            echo "Network backend_pg_net already exists"
+          fi
+          echo "Building and starting updated services..."
+          docker compose -f \${COMPOSE_FILE} up -d --build \${SERVICE_NAME_COMPOSE}
+          EOF
+
+      - name: Done
+        run: echo "Backend deployment completed successfully!"
+

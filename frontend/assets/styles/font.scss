@@ -1,0 +1,81 @@
+@mixin textClass($type, $value) {
+  .text-#{$type}-#{$value} {
+    @if $type == 'size' {
+      font-size: #{$value}px;
+      line-height: #{$value + 3}px;
+    } @else if $type == 'style' {
+      font-style: #{$value};
+    } @else if $type == 'weight' {
+      font-weight: #{$value};
+    } @else if $type == 'transform' {
+      text-transform: #{$value};
+    } @else if $type == 'align' {
+      text-align: #{$value};
+    }
+  }
+}
+
+@mixin color($color) {
+  color: $color;
+}
+
+@mixin text-shadow($shadow...) {
+  text-shadow: $shadow;
+}
+
+@mixin text-stroke($width, $color: null) {
+  -webkit-text-stroke-width: $width;
+  @if $color != null {
+    -webkit-text-stroke-color: $color;
+  }
+}
+
+// Используем миксин с конкретными значениями
+@include textClass(size, 10);
+@include textClass(size, 12);
+@include textClass(size, 14);
+@include textClass(size, 16);
+@include textClass(size, 20);
+@include textClass(size, 22);
+@include textClass(size, 24);
+@include textClass(size, 28);
+@include textClass(size, 32);
+@include textClass(size, 42);
+@include textClass(style, italic);
+@include textClass(style, normal);
+@include textClass(weight, 300);
+@include textClass(weight, 400);
+@include textClass(weight, 500);
+@include textClass(weight, 600);
+@include textClass(weight, 700);
+@include textClass(weight, 900);
+@include textClass(transform, lowercase);
+@include textClass(transform, capitalize);
+@include textClass(transform, uppercase);
+@include textClass(align, left);
+@include textClass(align, right);
+@include textClass(align, center);
+@include textClass(align, justify);
+
+// Тени текста
+.text-shadow-none   { @include text-shadow(none); }
+.text-shadow-small  { @include text-shadow(0 0.3px 0 var(--color-black)); }
+.text-shadow-middle { @include text-shadow(0 0.5px 0 var(--color-black)); }
+.text-shadow-big    { @include text-shadow(0 1px 0 var(--color-black)); }
+.text-shadow-gold  { @include text-shadow(0 0 1.5px var(--color-white), 0 0 2.5px var(--color-gold)); }
+
+// Обводка текста
+.text-stroke-none   { @include text-stroke(0); }
+.text-stroke-small  { @include text-stroke(0.3px, var(--color-black)); }
+
+// Цвета
+.color-white   { @include color(var(--color-white)); }
+.color-black   { @include color(var(--color-text-black)); }
+.color-grey    { @include color(var(--color-grey-light)); }
+.color-blue  { @include color(var(--color-blue)); }
+.color-cyan  { @include color(var(--color-cyan)); }
+.color-yellow  { @include color(var(--color-yellow)); }
+.color-gold    { @include color(var(--color-gold)); }
+.color-light   { @include color(var(--color-bet-light-light)); }
+.color-dark    { @include color(var(--color-bet-dark-light)); }
+.color-red     { @include color(var(--color-bet-red-light)); }
