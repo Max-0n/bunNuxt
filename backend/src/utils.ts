@@ -5,7 +5,6 @@ import { Interval, isSameDay as logicUtils_IsSameDay } from '@pathly-protocol/lo
 import { differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from 'date-fns'
 import murmurhash from 'murmurhash'
 import { salt } from './core/constants'
-// import { Whitelist } from './core/Whitelist'
 import { Error400 } from './Errors'
 
 export { Interval }

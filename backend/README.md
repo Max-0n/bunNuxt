@@ -2,7 +2,7 @@
 
 ## Development
 
-1. Copy `.env.example` to `.env` and put your local telegram bot token to `TG_BOT_TOKEN` env variable
+1. Copy `.env.example` to `.env` and adjust Postgres settings if needed
 2. `docker compose build`
 2. `docker compose up -d postgres valkey-cache valkey-bullmq backend barcode-api`
 

@@ -1,0 +1,10 @@
+---
+description: Backend and API shared types must live in protocol with TypeBox
+globs: backend/**/*.ts, protocol/src/shared/**/*.ts
+---
+
+# Shared types (protocol)
+
+- New types used by the backend (and wire/API contracts) must be defined with **@sinclair/typebox** in `protocol/src/shared/` (typically `types.ts` or a dedicated file in that folder).
+- Export both the schema (`export const Foo = t.Object(...)`) and the TypeScript type (`export type Foo = Static<typeof Foo>`), following existing patterns in `protocol/src/shared/types.ts`.
+- Do not add ad-hoc `interface` / standalone type files under `backend/src/types/` for shared shapes; add them to the protocol instead.

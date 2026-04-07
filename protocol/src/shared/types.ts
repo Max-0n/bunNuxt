@@ -1,7 +1,5 @@
 import type { IntegerOptions, Static, StringOptions, TObject } from '@sinclair/typebox/type'
 import * as t from '@sinclair/typebox/type'
-import type { mnemonicToWalletKey } from '@ton/crypto'
-import type { WalletContractV4 } from '@ton/ton'
 
 export const PosInteger = (options: IntegerOptions = {}) => t.Integer({ ...options, minimum: 1 })
 
@@ -55,6 +53,22 @@ export const AuthTelegramWebApp_Req = t.Object({
   fingerprint: t.Optional(Fingerprint),
   trafficId: t.Optional(t.String()),
   referralId: t.Optional(t.String()),
+})
+
+/** Telegram WebApp `user` JSON (decoded from initData). */
+export type WebAppUser = Static<typeof WebAppUser>
+export const WebAppUser = t.Object({
+  id: t.Number(),
+  first_name: t.String(),
+  last_name: t.Optional(t.String()),
+  username: t.Optional(t.String()),
+  usernames: t.Optional(t.Array(t.String())),
+  is_bot: t.Optional(t.Boolean()),
+  is_premium: t.Optional(t.Boolean()),
+  added_to_attachment_menu: t.Optional(t.Boolean()),
+  allows_write_to_pm: t.Optional(t.Boolean()),
+  language_code: t.Optional(t.String()),
+  photo_url: t.Optional(t.String()),
 })
 
 export type UserShortDTO = Static<typeof UserShortDTO>
@@ -270,15 +284,14 @@ export const InitiateWithdrawalResult = t.Object({
 })
 export type InitiateWithdrawalResult = Static<typeof InitiateWithdrawalResult>
 
-// Note: GetWalletContractResult uses WalletContractV4 and KeyPair from @ton/ton and @ton/crypto
-// These are runtime types, so we use t.Any() for them in the schema
+// Runtime values come from @ton/* in the backend; protocol keeps them untyped (t.Any / unknown).
 export const GetWalletContractResult = t.Object({
-  wallet: t.Any(), // WalletContractV4
-  keyPair: t.Any(), // Awaited<ReturnType<typeof mnemonicToWalletKey>>
+  wallet: t.Any(),
+  keyPair: t.Any(),
 })
 export type GetWalletContractResult = {
-  wallet: WalletContractV4
-  keyPair: Awaited<ReturnType<typeof mnemonicToWalletKey>>
+  wallet: unknown
+  keyPair: unknown
 }
 
 // Types from PgDb (backend/src/db/pgDb.ts)
@@ -292,31 +305,10 @@ export const InsertNftsIfNotExistsResult = t.Object({
 })
 export type InsertNftsIfNotExistsResult = Static<typeof InsertNftsIfNotExistsResult>
 
-// NFT Gift type for shop and user gifts
-export const NftGift = t.Object({
-  address: t.String(),
-  name: t.String(),
-  description: t.String(),
-  image: t.String(),
-  animationUrl: t.Optional(t.Union([t.String(), t.Null()])),
-  attributes: t.Optional(t.Union([t.Any(), t.Null()])),
-  preview5x5: t.Optional(t.Union([t.String(), t.Null()])),
-  preview100x100: t.Optional(t.Union([t.String(), t.Null()])),
-  preview500x500: t.Optional(t.Union([t.String(), t.Null()])),
-  preview1500x1500: t.Optional(t.Union([t.String(), t.Null()])),
-  price: t.String(),
-  status: t.String(),
-})
-export type NftGift = Static<typeof NftGift>
-
 export const UserMeResponse = t.Object({
   id: t.String(),
   username: t.String(),
   avatar: t.String(),
-  balance: t.String(),
-  gifts: t.Array(NftGift),
-  freeRollUsedToday: t.Boolean(),
-  isAdmin: t.Optional(t.Boolean()),
 })
 export type UserMeResponse = Static<typeof UserMeResponse>
 

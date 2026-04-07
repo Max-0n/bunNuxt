@@ -18,6 +18,7 @@ CREATE TABLE "users" (
 	"invitee" varchar,
 	"trafficId" varchar,
 	"role" varchar(20) DEFAULT 'user',
+	"balance" numeric(20, 8) DEFAULT '0' NOT NULL,
 	"updatedAt" timestamp,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"deletedAt" timestamp

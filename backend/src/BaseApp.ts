@@ -29,7 +29,7 @@ export const BaseApp = (
           set.headers['config-next-update'] = currentPathlyConfig.nextUpdateDate.toISOString()
         return { barcodesConf: currentPathlyConfig.conf, publicBarcodesConf: currentPathlyConfig.publicConf }
       })
-      .use(swagger({ exclude: '/telegram-webhook', path: '/swagger-super-secret-path' }))
+      .use(swagger({ path: '/swagger-super-secret-path' }))
       .error(Errors)
       .onError(async ({ code, error, set, request, path }) => {
         const isProd = config.appName === 'Prod'

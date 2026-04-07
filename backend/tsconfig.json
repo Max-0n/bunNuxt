@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*", "node_modules/tdlib-types/index.d.ts", "../protocol/src/shared/Events.ts"],
+  "include": ["src/**/*", "../protocol/src/shared/Events.ts"],
   "compilerOptions": {
     "paths": {
       "@src/*": ["./src/*"],

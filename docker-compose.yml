@@ -23,6 +23,11 @@ services:
     command: /entrypoint.dev.sh
     ports:
       - "7078:7078"
+    environment:
+      # Override .env: inside the container localhost is not the Postgres service
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DATABASE: local_db
     env_file:
       - .env
     volumes:
@@ -41,6 +46,10 @@ services:
     command: /entrypoint.dev.sh
     ports:
       - "7079:7079"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DATABASE: local_db
     env_file:
       - .env
     volumes:

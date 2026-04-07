@@ -32,22 +32,7 @@ jobs:
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       POSTGRES_DATABASE: ${{ secrets.POSTGRES_DATABASE }}
       HTTP_PORT: ${{ inputs.ServiceName == '🔥backend-prod' && '7078' || '7079' }}
-      TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-      TG_BOT_WEBHOOK_ENABLED: ${{ secrets.TG_BOT_WEBHOOK_ENABLED }}
-      TG_BOT_WEBHOOK_SECRET: ${{ secrets.TG_BOT_WEBHOOK_SECRET }}
-      TG_BOT_WEBHOOK_URL: ${{ secrets.TG_BOT_WEBHOOK_URL }}
-      TG_BOT_SET_WEBHOOK_AFTER_LAUNCH: ${{ secrets.TG_BOT_SET_WEBHOOK_AFTER_LAUNCH }}
       APP_NAME: ${{ vars.APP_NAME }}
-      BOT_URL: ${{ vars.BOT_URL }}
-      WEB_APP_URL: ${{ vars.WEB_APP_URL }}
-      WELCOME_IMAGE: ${{ vars.WELCOME_IMAGE }}
-      TON_ADDRESS: ${{ vars.TON_ADDRESS }}
-      TON_MNEMONIC: ${{ secrets.TON_MNEMONIC }}
-      TON_MNEMONIC_NFT: ${{ secrets.TON_MNEMONIC_NFT }}
-      TON_CENTER_API_URL: ${{ vars.TON_CENTER_API_URL }}
-      TON_CENTER_API_KEY: ${{ secrets.TON_CENTER_API_KEY }}
-      TON_API_URL: ${{ vars.TON_API_URL }}
-      TON_API_KEY: ${{ secrets.TON_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -68,21 +53,6 @@ jobs:
           POSTGRES_USER=${POSTGRES_USER}
           POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
           POSTGRES_DATABASE=${POSTGRES_DATABASE}
-          TG_BOT_TOKEN=${TG_BOT_TOKEN}
-          TG_BOT_WEBHOOK_ENABLED=${TG_BOT_WEBHOOK_ENABLED}
-          TG_BOT_WEBHOOK_SECRET=${TG_BOT_WEBHOOK_SECRET}
-          TG_BOT_WEBHOOK_URL=${TG_BOT_WEBHOOK_URL}
-          TG_BOT_SET_WEBHOOK_AFTER_LAUNCH=${TG_BOT_SET_WEBHOOK_AFTER_LAUNCH}
-          BOT_URL=${BOT_URL}
-          WEB_APP_URL=${WEB_APP_URL}
-          WELCOME_IMAGE=${WELCOME_IMAGE}
-          TON_ADDRESS=${TON_ADDRESS}
-          TON_MNEMONIC=${TON_MNEMONIC}
-          TON_MNEMONIC_NFT=${TON_MNEMONIC_NFT}
-          TON_CENTER_API_URL=${TON_CENTER_API_URL}
-          TON_CENTER_API_KEY=${TON_CENTER_API_KEY}
-          TON_API_URL=${TON_API_URL}
-          TON_API_KEY=${TON_API_KEY}
           EOF
 
       - name: Configure SSH

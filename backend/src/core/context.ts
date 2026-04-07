@@ -1,11 +1,9 @@
 import { PathlyConfig } from '@pathly-protocol/config'
 import { PgDb } from '@src/db/pgDb'
-import { TelegramBot } from '@src/tg/TelegramBot'
 
 export namespace Context {
   export type Services = {
     pgDb: PgDb
-    tgBot: TelegramBot
     // bull: Bull
     // sseController: SseController
     // cacheClient: CacheClient

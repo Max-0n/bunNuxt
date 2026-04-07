@@ -15,8 +15,6 @@
   "type": "module",
   "dependencies": {
     "@sinclair/typebox": "0.34.41",
-    "@ton/crypto": "^3.3.0",
-    "@ton/ton": "^16.1.0",
     "type-fest": "5.3.0"
   }
 }

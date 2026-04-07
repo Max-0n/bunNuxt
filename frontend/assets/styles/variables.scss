@@ -40,12 +40,11 @@
 
   --color-main: var(--color-button-main);
 
-  --font-color: var(--color-black);
-
   --bg-color: rgb(15, 1, 20);
   --bg-color-light: rgb(119, 15, 140);
 
-  --background-html: radial-gradient(ellipse at top, var(--bg-color-light), var(--bg-color));
+  --background-html: var(--bg-white);
+  --font-color: var(--color-black);
 
   --box-shadow: 0 2px 4px 0 var(--color-black-025);
 }

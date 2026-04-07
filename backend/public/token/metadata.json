@@ -1,9 +1,0 @@
-{
-  "name": "Hamster Kombat",
-  "description": "Unleash your inner CEO",
-  "symbol": "HMSTR",
-  "decimals": "9",
-  "image": "https://token.hamsterkombatgame.io/token/icon.png",
-  "mintles_merkle_dump_uri": "",
-  "custom_payload_api_uri": "https://proof.hamsterkombatgame.io/jettons/EQAJ8uWd7EBqsmpSWaRdf_I-8R8-XHwh3gsNKhy-UrdrPcUo/"
-}

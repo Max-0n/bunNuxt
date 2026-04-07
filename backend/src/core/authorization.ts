@@ -1,8 +1,7 @@
 import crypto from 'node:crypto'
-import { IpInfo } from '@shared-protocol/types'
+import { IpInfo, type WebAppUser } from '@shared-protocol/types'
 import { PgDb } from '@src/db/pgDb'
 import { Error400 } from '@src/Errors'
-import * as tg from '@src/tg'
 import { canAuthenticate, extractAuthToken_fromHeader } from '@src/utils'
 import { salt } from './constants'
 
@@ -19,7 +18,7 @@ export namespace LogicAuthorization {
     now: Date
     pgDb: PgDb
     headers: Record<string, string | undefined>
-    telegramData: tg.WebAppUser
+    telegramData: WebAppUser
     // cacheClient: CacheClient
     trafficId?: string
     referralId?: string
