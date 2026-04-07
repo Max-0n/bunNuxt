@@ -1,6 +1,6 @@
 <template lang="pug">
 .home
-  p.home__greeting Привет!
+  CircleDrawGame
 </template>
 
 <script setup lang="ts"></script>
@@ -9,13 +9,10 @@
 .home {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
-}
-
-.home__greeting {
-  margin: 0;
-  text-align: center;
+  padding-top: 8px;
 }
 </style>
