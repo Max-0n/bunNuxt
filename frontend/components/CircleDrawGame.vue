@@ -8,6 +8,7 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { createCircleDrawGame } from '~/game/createCircleDrawGame'
 
 const canvasHost = ref<HTMLElement | null>(null)
+const runtimeConfig = useRuntimeConfig()
 
 let api: ReturnType<typeof createCircleDrawGame> | null = null
 let resizeObserver: ResizeObserver | null = null
@@ -16,7 +17,9 @@ onMounted(() => {
   const el = canvasHost.value
   if (!el) return
 
-  api = createCircleDrawGame(el)
+  api = createCircleDrawGame(el, {
+    apiBaseUrl: String(runtimeConfig.public.apiUrl ?? ''),
+  })
 
   resizeObserver = new ResizeObserver(() => {
     api?.resize()

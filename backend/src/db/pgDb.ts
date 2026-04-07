@@ -2,11 +2,18 @@ import type { UserShortDTO } from '@shared-protocol/types'
 import { Db } from '@src/Db'
 import { Errors } from '@src/Errors'
 import { getAuthTokenHash } from '@src/utils'
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq, isNull, sql } from 'drizzle-orm'
+import { circleDrawScores } from './schema/circleDrawScores'
 import { type Session, sessions } from './schema/session'
 import { type NewUser, users } from './schema/users'
 
 export type PgDb = Awaited<ReturnType<typeof create>>
+
+export type CircleDrawLeaderboardRow = {
+  username: string
+  scorePercent: number
+  createdAt: Date
+}
 
 function create({ db }: Db) {
   async function findUser(id: string) {
@@ -106,6 +113,55 @@ function create({ db }: Db) {
     }
   }
 
+  async function insertCircleDrawScore(
+    userId: string | null,
+    scorePercent: number
+  ): Promise<{ scorePercent: number; createdAt: Date }> {
+    const [row] = await db
+      .insert(circleDrawScores)
+      .values({ userId: userId ?? null, scorePercent })
+      .returning({
+        scorePercent: circleDrawScores.scorePercent,
+        createdAt: circleDrawScores.createdAt,
+      })
+
+    if (!row?.createdAt) {
+      throw new Error('insertCircleDrawScore: empty returning row')
+    }
+
+    return { scorePercent: row.scorePercent, createdAt: row.createdAt }
+  }
+
+  async function getCircleDrawLeaderboardBestPerUser(limit: number): Promise<CircleDrawLeaderboardRow[]> {
+    const result = await db.execute(sql`
+      WITH ranked AS (
+        SELECT
+          COALESCE(u.username, 'Аноним') AS username,
+          cds."scorePercent" AS "scorePercent",
+          cds."createdAt" AS "createdAt",
+          ROW_NUMBER() OVER (
+            PARTITION BY COALESCE(cds."userId", '')
+            ORDER BY cds."scorePercent" DESC, cds."createdAt" DESC
+          ) AS rn
+        FROM ${circleDrawScores} cds
+        LEFT JOIN ${users} u ON u.id = cds."userId"
+        WHERE u.id IS NULL OR u."deletedAt" IS NULL
+      )
+      SELECT username, "scorePercent", "createdAt"
+      FROM ranked
+      WHERE rn = 1
+      ORDER BY "scorePercent" DESC, "createdAt" DESC
+      LIMIT ${limit}
+    `)
+
+    const rawRows = (result as unknown as { rows: Record<string, unknown>[] }).rows
+    return rawRows.map(r => ({
+      username: String(r.username),
+      scorePercent: Number(r.scorePercent),
+      createdAt: r.createdAt instanceof Date ? r.createdAt : new Date(String(r.createdAt)),
+    }))
+  }
+
   return {
     findUser,
     addUser,
@@ -115,6 +171,8 @@ function create({ db }: Db) {
     getSessionOrUndefined,
     softDeleteUserSessions,
     getMyProfile,
+    insertCircleDrawScore,
+    getCircleDrawLeaderboardBestPerUser,
   }
 }
 

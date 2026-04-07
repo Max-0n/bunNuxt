@@ -1,7 +1,9 @@
+import type { CircleDrawLeaderboardResponse } from '@shared-protocol/types'
 import Phaser from 'phaser'
-import { formatRecordDateTime, getSortedCircleDrawRecords } from '~/game/recordsStorage'
+import { CIRCLE_DRAW_REGISTRY_KEY, type CircleDrawGameContext, fetchCircleDrawLeaderboard } from '~/game/circleDrawApi'
 import { SceneKey } from '~/game/sceneKeys'
 import { tweenSlideEnter, tweenSlideExitThenStart } from '~/game/sceneSlide'
+import { formatRecordDateTime } from '~/utils/formatRecordDateTime'
 
 export class LeaderboardScene extends Phaser.Scene {
   private root!: Phaser.GameObjects.Container
@@ -9,6 +11,7 @@ export class LeaderboardScene extends Phaser.Scene {
   private listText!: Phaser.GameObjects.Text
   private backButtonBg!: Phaser.GameObjects.Rectangle
   private backButtonText!: Phaser.GameObjects.Text
+  private leaderboardData: CircleDrawLeaderboardResponse | null = null
 
   constructor() {
     super({ key: SceneKey.Leaderboard })
@@ -31,7 +34,7 @@ export class LeaderboardScene extends Phaser.Scene {
       .setOrigin(0.5)
 
     this.listText = this.add
-      .text(24, 110, this.buildLeaderboardText(), {
+      .text(24, 110, 'Загрузка...', {
         fontFamily: 'Rubik, sans-serif',
         fontSize: '16px',
         color: '#ffffffdd',
@@ -65,21 +68,52 @@ export class LeaderboardScene extends Phaser.Scene {
 
     tweenSlideEnter(this, this.root, w)
 
+    void this.loadLeaderboard()
+
     this.scale.on('resize', this.handleResize, this)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off('resize', this.handleResize, this)
     })
   }
 
-  private buildLeaderboardText(): string {
-    const records = getSortedCircleDrawRecords().slice(0, 15)
+  private getCircleDrawContext(): CircleDrawGameContext | undefined {
+    return this.game.registry.get(CIRCLE_DRAW_REGISTRY_KEY) as CircleDrawGameContext | undefined
+  }
+
+  private async loadLeaderboard(): Promise<void> {
+    const ctx = this.getCircleDrawContext()
+    if (!ctx?.apiBaseUrl) {
+      this.listText.setText('Не задан адрес API (API_URL).')
+      return
+    }
+
+    try {
+      const data = await fetchCircleDrawLeaderboard()
+      this.leaderboardData = data
+      this.applyLeaderboardText()
+    } catch {
+      this.leaderboardData = null
+      this.listText.setText('Не удалось загрузить лидерборд.')
+    }
+  }
+
+  private applyLeaderboardText(): void {
+    if (!this.leaderboardData) return
+    this.listText.setText(this.buildLeaderboardText(this.leaderboardData))
+  }
+
+  private buildLeaderboardText(data: CircleDrawLeaderboardResponse): string {
+    const records = data.entries
 
     if (records.length === 0) {
       return 'Записей пока нет.\n\nНарисуйте круг на сцене игры, чтобы рекорды появились здесь.'
     }
 
     return records
-      .map((record, index) => `${index + 1}. ${record.scorePercent}%  —  ${formatRecordDateTime(record.createdAtMs)}`)
+      .map(
+        record =>
+          `${record.rank}. ${record.username}  —  ${record.scorePercent}%  —  ${formatRecordDateTime(Date.parse(record.createdAt))}`
+      )
       .join('\n')
   }
 
@@ -90,7 +124,7 @@ export class LeaderboardScene extends Phaser.Scene {
     this.titleText.setPosition(w / 2, 60)
     this.listText.setPosition(24, 110)
     this.listText.setWordWrapWidth(Math.max(220, w - 48))
-    this.listText.setText(this.buildLeaderboardText())
+    this.applyLeaderboardText()
 
     this.backButtonBg.setPosition(w / 2, h - 56)
     this.backButtonText.setPosition(w / 2, h - 56)

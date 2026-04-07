@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { CIRCLE_LINE_WIDTH_IDEAL, CIRCLE_LINE_WIDTH_USER } from '~/constants/circleDraw'
-import { addCircleDrawRecord } from '~/game/recordsStorage'
+import { CIRCLE_DRAW_REGISTRY_KEY, type CircleDrawGameContext, submitCircleDrawScore } from '~/game/circleDrawApi'
 import { SceneKey } from '~/game/sceneKeys'
 import { tweenSlideEnter, tweenSlideExitThenStart } from '~/game/sceneSlide'
 import { evaluateCircleStroke } from '~/utils/evaluateCircleStroke'
@@ -156,7 +156,10 @@ export class CircleDrawScene extends Phaser.Scene {
 
     const result = evaluateCircleStroke(this.points, this.idealCx, this.idealCy, this.idealR)
     const scorePercent = result?.score ?? 0
-    addCircleDrawRecord(scorePercent)
+    const ctx = this.game.registry.get(CIRCLE_DRAW_REGISTRY_KEY) as CircleDrawGameContext | undefined
+    if (ctx?.apiBaseUrl) {
+      void submitCircleDrawScore(scorePercent)
+    }
 
     if (result) {
       this.resultText.setText(

@@ -1,10 +1,20 @@
 import Phaser from 'phaser'
+import { CIRCLE_DRAW_REGISTRY_KEY, type CircleDrawGameContext } from '~/game/circleDrawApi'
 import { CircleDrawScene } from '~/game/circleDrawScene'
 import { LeaderboardScene } from '~/game/leaderboardScene'
 import { LoadingScene } from '~/game/loadingScene'
 import { MenuScene } from '~/game/menuScene'
 
-export function createCircleDrawGame(parent: HTMLElement): { destroy: () => void; resize: () => void } {
+export type CreateCircleDrawGameOptions = {
+  apiBaseUrl: string
+}
+
+export function createCircleDrawGame(
+  parent: HTMLElement,
+  options: CreateCircleDrawGameOptions
+): { destroy: () => void; resize: () => void } {
+  const ctx: CircleDrawGameContext = { apiBaseUrl: options.apiBaseUrl }
+
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent,
@@ -18,6 +28,11 @@ export function createCircleDrawGame(parent: HTMLElement): { destroy: () => void
     scene: [LoadingScene, MenuScene, CircleDrawScene, LeaderboardScene],
     input: {
       touch: { capture: true },
+    },
+    callbacks: {
+      preBoot: g => {
+        g.registry.set(CIRCLE_DRAW_REGISTRY_KEY, ctx)
+      },
     },
   })
 

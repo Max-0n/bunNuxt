@@ -1,0 +1,1 @@
+ALTER TABLE "circle_draw_scores" ALTER COLUMN "userId" DROP NOT NULL;

@@ -1,4 +1,4 @@
-import { AUTH_TOKEN_KEY } from '~/constants'
+// import { AUTH_TOKEN_KEY } from '~/constants'
 
 const ABORT_TIMEOUT_MS = 15000
 
@@ -13,7 +13,7 @@ export const $api = {
 function request(method: string) {
   return async (url: string, opts: any = {}, callbacks_: any = {}): Promise<any> => {
     const controller = new AbortController()
-    const token = localStorage.getItem(AUTH_TOKEN_KEY)
+    // const token = localStorage.getItem(AUTH_TOKEN_KEY)
 
     const config = useRuntimeConfig()
     const callbacks = {
@@ -37,7 +37,7 @@ function request(method: string) {
           }
         : {
             ...opts?.headers,
-            Authorization: token ? `Bearer ${token}` : ``,
+            // Authorization: token ? `Bearer ${token}` : ``,
             ...(opts?.body ? { 'Content-Type': 'application/json' } : {}),
             Accept: 'application/json',
           },
@@ -84,18 +84,18 @@ function request(method: string) {
       },
       // @ts-expect-error
       async onResponseError(context) {
-        const error_code = context.response?._data?.error_code
-        if (
-          localStorage.getItem(AUTH_TOKEN_KEY) &&
-          error_code &&
-          ['NotFound_Session', '📛Invalid_TelegramWebAppInitData', 'User not found'].includes(error_code)
-        ) {
-          sessionStorage.clear()
-          localStorage.removeItem(AUTH_TOKEN_KEY)
-
-          navigateTo(URLS.INDEX)
-          setTimeout(location.reload, 2000)
-        }
+        // const error_code = context.response?._data?.error_code
+        // if (
+        //   localStorage.getItem(AUTH_TOKEN_KEY) &&
+        //   error_code &&
+        //   ['NotFound_Session', '📛Invalid_TelegramWebAppInitData', 'User not found'].includes(error_code)
+        // ) {
+        //   sessionStorage.clear()
+        //   localStorage.removeItem(AUTH_TOKEN_KEY)
+        //
+        //   navigateTo(URLS.INDEX)
+        //   setTimeout(location.reload, 2000)
+        // }
 
         const errorData = {
           request: context.request,

@@ -8,6 +8,20 @@
       "when": 1734567890000,
       "tag": "0000_users_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1775578106914,
+      "tag": "0001_parched_silver_centurion",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775579016592,
+      "tag": "0002_certain_komodo",
+      "breakpoints": true
     }
   ]
 }

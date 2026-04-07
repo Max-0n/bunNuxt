@@ -312,6 +312,30 @@ export const UserMeResponse = t.Object({
 })
 export type UserMeResponse = Static<typeof UserMeResponse>
 
+export const CircleDrawLeaderboardEntry = t.Object({
+  rank: t.Integer({ minimum: 1 }),
+  username: t.String(),
+  scorePercent: t.Integer({ minimum: 0, maximum: 100 }),
+  createdAt: t.String(),
+})
+export type CircleDrawLeaderboardEntry = Static<typeof CircleDrawLeaderboardEntry>
+
+export const CircleDrawLeaderboardResponse = t.Object({
+  entries: t.Array(CircleDrawLeaderboardEntry),
+})
+export type CircleDrawLeaderboardResponse = Static<typeof CircleDrawLeaderboardResponse>
+
+export const CircleDrawSubmitScoreBody = t.Object({
+  scorePercent: t.Integer({ minimum: 0, maximum: 100 }),
+})
+export type CircleDrawSubmitScoreBody = Static<typeof CircleDrawSubmitScoreBody>
+
+export const CircleDrawSubmitScoreResponse = t.Object({
+  scorePercent: t.Integer({ minimum: 0, maximum: 100 }),
+  createdAt: t.String(),
+})
+export type CircleDrawSubmitScoreResponse = Static<typeof CircleDrawSubmitScoreResponse>
+
 export const WithdrawRequestStatus = t.Union([t.Literal('pending'), t.Literal('payed'), t.Literal('rejected')])
 export type WithdrawRequestStatus = Static<typeof WithdrawRequestStatus>
 

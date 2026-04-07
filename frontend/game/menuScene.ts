@@ -1,7 +1,8 @@
 import Phaser from 'phaser'
-import { formatRecordDateTime, getTopCircleDrawRecord } from '~/game/recordsStorage'
+import { CIRCLE_DRAW_REGISTRY_KEY, type CircleDrawGameContext, fetchCircleDrawLeaderboard } from '~/game/circleDrawApi'
 import { SceneKey } from '~/game/sceneKeys'
 import { tweenSlideEnter, tweenSlideExitThenStart } from '~/game/sceneSlide'
+import { formatRecordDateTime } from '~/utils/formatRecordDateTime'
 
 type MenuButton = {
   background: Phaser.GameObjects.Rectangle
@@ -82,7 +83,8 @@ export class MenuScene extends Phaser.Scene {
       this.leaderboardButton.label,
     ])
 
-    this.refreshTopRecord()
+    this.topRecordText.setText('ТОП рекорд: загрузка…')
+    void this.refreshTopRecord()
     this.layout()
     this.prepareButtonEntrance()
 
@@ -133,14 +135,31 @@ export class MenuScene extends Phaser.Scene {
     }
   }
 
-  private refreshTopRecord(): void {
-    const top = getTopCircleDrawRecord()
-    if (!top) {
-      this.topRecordText.setText('ТОП рекорд: пока пусто')
+  private getCircleDrawContext(): CircleDrawGameContext | undefined {
+    return this.game.registry.get(CIRCLE_DRAW_REGISTRY_KEY) as CircleDrawGameContext | undefined
+  }
+
+  private async refreshTopRecord(): Promise<void> {
+    const ctx = this.getCircleDrawContext()
+    if (!ctx?.apiBaseUrl) {
+      this.topRecordText.setText('ТОП рекорд: не задан API_URL')
       return
     }
 
-    this.topRecordText.setText(`ТОП рекорд: ${top.scorePercent}%\n${formatRecordDateTime(top.createdAtMs)}`)
+    try {
+      const data = await fetchCircleDrawLeaderboard()
+      const top = data.entries[0]
+      if (!top) {
+        this.topRecordText.setText('ТОП рекорд: пока пусто')
+        return
+      }
+
+      this.topRecordText.setText(
+        `ТОП рекорд: ${top.scorePercent}% (${top.username})\n${formatRecordDateTime(Date.parse(top.createdAt))}`
+      )
+    } catch {
+      this.topRecordText.setText('ТОП рекорд: не удалось загрузить')
+    }
   }
 
   private createButton(text: string, color: number, onClick: () => void): MenuButton {
